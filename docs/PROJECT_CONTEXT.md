@@ -21,16 +21,16 @@
 ## START HERE (one screen, verified 2026-09-11)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** step 1 is done up to the owner's STOP. The PRD is approved and frozen for review, with fixes DOC-01, DOC-03, GAP-01 and GAP-02 applied. All 19 ADRs are written.
-- **🛑 STOP.** `01-ARCHITECTURE.md` waits for the owner's go. The owner chose "ADRs + PRD fixes, then stop" on 2026-09-11.
+- **Current step:** Hat A, step 1. The PRD is frozen for review, all 19 ADRs are written, and `01-ARCHITECTURE.md` was written (In Review) at the owner's go on 2026-09-11.
+- **🛑 STOP.** `02-DATA-MODEL.md` waits for the owner's go. The owner is releasing Hat A's documents one at a time.
 - **Everything is committed and pushed.** Run `git -C ~/chukta log --oneline` to confirm.
 
 | | Verified 2026-09-11 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · then this file |
-| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted) |
-| Pending | 01 to 05 (Hat A). 06, 12, SEC-REVIEW-ARCH (Hat C). IMPL-FEASIBILITY-REVIEW, 07 to 11 (Hat B). README, INDEX. |
+| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · then `01-ARCHITECTURE.md` |
+| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (In Review) |
+| Pending | 02 to 05 (Hat A), then ADRs for the D-01 to D-09 decisions in `01` (O-08). 06, 12, SEC-REVIEW-ARCH (Hat C). IMPL-FEASIBILITY-REVIEW, 07 to 11 (Hat B). README, INDEX. |
 | Statutory corpus | Empty by design. The owner loads verified text in build Phase 4 (PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -39,7 +39,7 @@
 | Step | Hat | Deliverables | Status |
 |---|---|---|---|
 | 0 | A | Understanding, 19 recommendations, PRD TOC | ✅ Done 2026-09-11. All 19 adopted, six with modifications. |
-| 1 | A | 00 to 05, ADRs | 🟡 00-PRD approved and frozen for review. ADR-0001 to 0019 written. **01 to 05 wait for the owner's go.** |
+| 1 | A | 00 to 05, ADRs | 🟡 00-PRD frozen for review. ADR-0001 to 0019 written. 01-ARCHITECTURE written (In Review). **02 to 05 wait for the owner's go, one at a time.** |
 | 2 | C | 06, 12, SEC-REVIEW-ARCH | Not started |
 | 3 | B | IMPL-FEASIBILITY-REVIEW | Not started |
 | 4 | A, then a short C delta pass | Revisions, logged in ADRs | Not started |
@@ -57,6 +57,8 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 | O-05 | Hand-write 80 Hinglish messages, with 2 or 3 other contributors | Monarch | Conversation eval |
 | O-06 | Confirm the `qwen3.6:27b` Ollama tag exists, and name the default frontier model | Monarch, then ADR-0016 | Model routing design |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
+| O-08 | Promote the `01-ARCHITECTURE.md` decisions D-01 to D-09 to ADRs when Hat A's set closes. Until then, §15 of `01` is their only record. | Hat A | Step 1 close |
+| O-09 | Answer the architecture open questions A-Q1 to A-Q7 (`01` §16): mail provider and region, deployment form, egress mechanism, auth and MFA, GPU schedule, OCR engine, region | Hats A, B and C, as listed in `01` §16 | Steps 2 to 5 |
 
 ## Traps: easy to get wrong
 
@@ -99,7 +101,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | The original requirements | [`BRIEF.md`](BRIEF.md) | Frozen |
 | What we build, for whom, and how we measure it | [`00-PRD.md`](00-PRD.md) | Frozen for step 2 review |
 | Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0019, summarised in the decision register below | Written, In Review |
-| System architecture | `01-ARCHITECTURE.md` | Pending (Hat A), waits for the owner's go |
+| System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | In Review |
 | Data model | `02-DATA-MODEL.md` | Pending (Hat A) |
 | Agent and engine design | `03-AGENT-DESIGN.md` | Pending (Hat A) |
 | Retrieval design | `04-RAG-DESIGN.md` | Pending (Hat A) |
@@ -119,6 +121,12 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · 01-ARCHITECTURE written (Hat A)
+- Written at the owner's go and committed with this update. It covers nine principles, the system context, six trust zones with egress only from the compute zone, component responsibilities with a "must never" column, four runtime sequences, durable execution, data stores, model routing and pseudonymisation, security hooks, deployment, observability and cost, NFR traceability, failure modes and extension points.
+- Nine decisions were made in it (D-01 to D-09), recorded with reasoning in `01` §15 and tracked as O-08 until they become ADRs. Its seven open questions (A-Q1 to A-Q7) are tracked as O-09.
+- Checked before commit: no dashes, and every ADR, requirement and D- ID cited in `01` resolves. All 20 Mermaid diagrams in the PRD and `01` parse with Mermaid 11.4.1. The 11 PRD diagrams had never been machine-checked before.
+- 🛑 STOP. 02-DATA-MODEL waits for the owner's go.
 
 ### 2026-09-11 · PRD fixes applied, master doc brought current, STOP
 - DOC-01, DOC-03, GAP-01 and GAP-02 applied to the PRD in `078b7d4`. The fixes ran as one script that aborts unless every anchor matches exactly once. Six assertions passed before the commit: SM rows in reading order 01 to 24; every SM reference in the PRD and the ADRs resolves; the inline VERIFY set equals Appendix A; no dashes; the FR-HQ, NFR-14 and SM-24 rows exist; the new references resolve.
@@ -191,7 +199,7 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 
 ## Plans
 
-**Documentation phase (now):** the checkpoint tracker in Part 1. Next is Hat A's 01 to 05, after the owner's go.
+**Documentation phase (now):** the checkpoint tracker in Part 1. Next is Hat A's 02 to 05, each after the owner's go.
 
 **Build phase:** 28 days, one developer. The phases are defined by Hat B in `09-BUILD-PLAN.md`. One fixed point is already known: statute text is loaded in Phase 4.
 
