@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Identifies what can go wrong in Chukta, who would cause it, and the controls that stop it. Covers every threat the brief requires, and records the security decisions that answer the architecture's open questions. |
 | **Intended reader** | The developer building v1, Hat A (revising at step 4), Hat B (planning tests in `11`), and whoever approves a pilot. |
-| **Status** | In Review |
+| **Status** | Frozen for step 3 review. Approved by the owner 2026-09-11. Later changes go through an ADR. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
 | **Last updated** | 2026-09-11 |
 | **Reviews** | [`00-PRD.md`](00-PRD.md), [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) and [ADR-0001 to ADR-0019](adr/). `02` to `05` do not exist yet. They get a delta pass later (PROJECT_CONTEXT O-11). |

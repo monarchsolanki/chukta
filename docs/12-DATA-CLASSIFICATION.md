@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Classifies every kind of data Chukta holds. Sets how each class is stored, accessed, sent to models, logged, kept and erased. Also sets the rules for synthetic data in v1, and the gate that must pass before any real data. |
 | **Intended reader** | The developer building v1, Hat A and Hat B, and whoever approves a pilot. |
-| **Status** | In Review |
+| **Status** | Frozen for step 3 review. Approved by the owner 2026-09-11. Later changes go through an ADR, except the §9 amendment the owner directed for the feasibility review. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
 | **Last updated** | 2026-09-11 |
 | **Related** | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) for threats, controls and the VERIFY register from V25 onward. [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) §7 for where data lives. |

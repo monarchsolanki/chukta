@@ -23,7 +23,7 @@
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
 - **Current step:** Hat C's step 2 is complete. `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` are written and In Review. The review found 18 issues (1 Critical, 6 High), which Hat A resolves at step 4 (O-12).
 - **Sequence change (owner, 2026-09-11):** Hat C ran ahead of Hat A's `02` to `05`. Those get a Hat C delta pass when they are written (O-11).
-- **🛑 STOP.** Waiting for the owner's review of Hat C's work. Next, in the owner's order: Hat B's feasibility review (step 3), or Hat A's `02` to `05`.
+- **Hat C was approved on 2026-09-11.** The owner's finding SEC-01 is recorded (O-14). **Hat B's feasibility review (step 3) is in progress.** STOP when it is done.
 - **Everything is committed and pushed.** Run `git -C ~/chukta log --oneline` to confirm.
 
 | | Verified 2026-09-11 |
@@ -41,8 +41,8 @@
 |---|---|---|---|
 | 0 | A | Understanding, 19 recommendations, PRD TOC | ✅ Done 2026-09-11. All 19 adopted, six with modifications. |
 | 1 | A | 00 to 05, ADRs | 🟡 00-PRD and 01-ARCHITECTURE frozen for review. ADR-0001 to 0019 written. 02 to 05 not started: the owner moved Hat C ahead of them. |
-| 2 | C | 06, 12, SEC-REVIEW-ARCH | ✅ Written 2026-09-11. 18 findings: 1 Critical, 6 High, 7 Medium, 4 Low. Awaiting the owner's review. |
-| 3 | B | IMPL-FEASIBILITY-REVIEW | Not started |
+| 2 | C | 06, 12, SEC-REVIEW-ARCH | ✅ Approved 2026-09-11. 18 findings (1 Critical, 6 High, 7 Medium, 4 Low), plus the owner's SEC-01. |
+| 3 | B | IMPL-FEASIBILITY-REVIEW | 🟡 In progress |
 | 4 | A, then a short C delta pass | Revisions, logged in ADRs | Not started |
 | 5 | B | 07 to 11 | Not started |
 | 6 | Final | README, INDEX | Not started |
@@ -64,6 +64,7 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 | O-11 | Hat C delta pass over `02` to `05` once they are written, because the owner moved Hat C ahead of them | Hat C | After `05` |
 | O-12 | Resolve SR-01 to SR-18 (`reviews/SEC-REVIEW-ARCH.md`). The Critical and High findings, SR-01 to SR-07, must be resolved before the build starts. | Hat A at step 4 | Build start |
 | O-13 | Promote the security decisions S-01 to S-14 (`06` §4) to ADRs, alongside `01`'s D-01 to D-09 (O-08) | Hat A at step 4 | Step 4 |
+| O-14 | SEC-01: specify the migration role and the runtime role in `02-DATA-MODEL.md`, and state which role each component connects as | Hat A | `02` |
 
 ## Traps: easy to get wrong
 
@@ -128,6 +129,11 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · Hat C approved. Owner finding SEC-01 recorded.
+- The owner approved `06`, `12` and the review, and confirmed SR-01 to SR-04 as genuine. SR-02 found a send path that would have defeated ADR-0011 in production.
+- **SEC-01 (Medium, the owner's finding, missed by Hat C):** the migration role and the runtime role must be separate. Recorded in the bug register and in the review. It lands in `02` (O-14).
+- `06`, `12` and the review are now Frozen for step 3 review. Next: Hat B's feasibility review (step 3).
 
 ### 2026-09-11 · SEC-REVIEW-ARCH written. Hat C step 2 complete. STOP.
 - 18 findings against the PRD, `01` and the ADRs: 1 Critical, 6 High, 7 Medium, 4 Low. The Critical and High findings (SR-01 to SR-07) must be resolved before the build (O-12).
@@ -241,6 +247,7 @@ A wrong fact or a missing requirement in a doc is a defect. IDs use `DOC-` for d
 | F-02 | 2026-09-11, owner review of `01` | Medium | D-02 called the Console the only public application surface, while §3 routed Nginx to a separate MCP server too | D-02 was written about webhooks and the §3 diagram from the component list. Nothing cross-checked decision text against the diagrams. | MCP server folded into the Console as a route. D-02 reworded. §3, §4, §9 and §10 updated. | Doc lint: every public route in the diagrams belongs to a component that D-02 names | Fixed |
 | F-03 | 2026-09-11, owner review of `01` | High | §10 assumed a funded AWS deployment with a GPU host, and A-Q5 treated the GPU host as a scheduling question when it is not affordable at all | Cost was never checked against the project's budget before the topology was drawn | v1 is `docker compose up` on a developer machine, and AWS is a specified-but-not-built target. D-03 shown to hold under Compose networks and tested in CI. A-Q5 reframed. D-06 revised. | CI egress and network tests (`01` §10.1) | Fixed |
 | F-04 | 2026-09-11, owner review of `01` | Low | §11 alerted on review-queue age but not on approval-queue age, so a draft nobody approves would stall its case unnoticed | Ageing was specified for the review queue (FR-HQ-5) and not generalised to every queue | Approval-queue signal and alert in `01` §11. The PRD requirement is O-10. | Alert test in `11` | Fixed in `01`. PRD requirement open (O-10). |
+| SEC-01 | 2026-09-11, owner review of Hat C | Medium | `06` §3.2 requires a runtime database role that owns nothing and has no `BYPASSRLS`, while `01` §4 has the Console run Prisma migrations, which need DDL rights. One connection string cannot do both. | Two documents written from different angles both implied the role split, and neither stated it. Hat C checked controls against threats, not against the configuration `01` gives the same component. | To be specified in `02-DATA-MODEL.md`: a migration role run as a separate job, and a runtime role under RLS, with each component's role stated (O-14) | The `06` §3.2 startup check, plus a test that the runtime role cannot run DDL | Open until `02` |
 
 Symptom and root cause are separate columns on purpose. In one LMS batch, every root cause turned out to differ from the reported symptom.
 
@@ -284,3 +291,4 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 - **Cross-check decision text against the diagrams.** D-02 and the §3 diagram disagreed for a whole review cycle (F-02).
 - **Price the topology before drawing it.** The GPU host was designed in before anyone asked whether it was affordable (F-03).
 - **Apply a control to every instance of its pattern.** Ageing was specified for one queue and missed for the other (F-04).
+- **Check each control against the configuration other documents give the same component.** `06` required a runtime role that owns nothing, while `01` had the same Console run migrations (SEC-01).

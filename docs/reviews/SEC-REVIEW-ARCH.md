@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Hat C's findings against Hat A's documents. Each finding has a severity, an attack or failure scenario, and a concrete mitigation. Hat A resolves them at step 4. |
 | **Intended reader** | Hat A for the step 4 revision, Hat B for feasibility and tests, and the owner |
-| **Status** | In Review |
+| **Status** | Approved by the owner 2026-09-11, with SR-01 to SR-04 confirmed genuine. Findings stay Open until step 4. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
 | **Last updated** | 2026-09-11 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, and ADR-0001 to ADR-0019 at `75cc43c`. `02` to `05` are not written yet (PROJECT_CONTEXT O-11). |
@@ -36,6 +36,14 @@
 | SR-16 | Low | `01` §5.4 | The gateway re-identifies a reply before tracing it, so trace masking is the only protection | Trace the pseudonymised form (S-05) | `01` §5.4 via ADR |
 | SR-17 | Low | `01` §10.1 | nginx sits on a routable network so that it can publish its port | Accepted, with a CI assertion | `11` |
 | SR-18 | Low | `01` §6, §10.3 | The production target states neither clock synchronisation nor log retention in India | NTP on every host, retention per `12` | `10` |
+
+### Added after approval
+
+| ID | Severity | Where | Finding | Mitigation | Lands in |
+|---|---|---|---|---|---|
+| SEC-01 | Medium | `01` §4, `06` §3.2 layer 4 | The database role split is implied but never stated. `06` requires an app role that owns nothing and has no `BYPASSRLS`, enforced by a startup check. But `01` §4 has the Console run Prisma migrations as sole owner, and migrations need DDL rights on the tables. One connection string cannot satisfy both. **Found by the owner. This review missed it.** | Two roles: a **migration role**, which owns the schema and runs migrations as a separate job, and a **runtime role**, which owns nothing and is subject to RLS. State which role each component connects as. | `02-DATA-MODEL.md` (O-14) |
+
+**Why this review missed it:** each control was checked against the threats, not against the configuration another document gives the same component. That check is now a lesson in `PROJECT_CONTEXT.md`.
 
 ---
 
