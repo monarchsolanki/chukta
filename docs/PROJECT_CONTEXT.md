@@ -110,7 +110,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | Agent and engine design | `03-AGENT-DESIGN.md` | Pending (Hat A) |
 | Retrieval design | `04-RAG-DESIGN.md` | Pending (Hat A) |
 | Evaluation plan | `05-EVAL-PLAN.md` | Pending (Hat A) |
-| Threat model | `06-SECURITY-THREAT-MODEL.md` | Pending (Hat C) |
+| Threat model: threats, deep dives, security decisions S-01 to S-14, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | In Review |
 | API contracts, including the send adapter and Tally adapter interfaces | `07-API-CONTRACTS.md` | Pending (Hat B) |
 | Synthetic data | `08-SYNTHETIC-DATA-SPEC.md` | Pending (Hat B) |
 | The 28-day build plan | `09-BUILD-PLAN.md` | Pending (Hat B) |
@@ -125,6 +125,14 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · 06-SECURITY-THREAT-MODEL written (Hat C)
+- 24 threats, each with an inherent and a residual severity, and six adversaries, the model itself among them.
+- Deep dives on the brief's eight required areas. The prompt-injection defence rests on capability, not prompt wording: a successful injection cannot change state, pick a tool, switch tenant or reach outbound prose. The citation gate is formalised as stages G1 to G7. It proves provenance, not applicability, and it says so.
+- Every approval-gate bypass path is listed (P-1 to P-9). Two new ones were found: Razorpay sending links or reminders itself, and an MCP client sending an unapproved draft. Both are closed. A person copying a pending draft (P-9) is the one accepted residual.
+- Security decisions S-01 to S-14 answer `01` A-Q3, A-Q4, A-Q7 and A-Q8. MCP gets option (a), tightened (S-01).
+- 15 test suites (ST-01 to ST-15) are handed to Hat B for `11`.
+- VERIFY register V25 to V43, covering DPDP, the SPDI Rules, CERT-In, and GST and income-tax record retention.
 
 ### 2026-09-11 · 01-ARCHITECTURE approved, owner findings F-01 to F-05 applied
 - **F-01 (High):** `01` now states the MCP versus P9 contradiction outright, and A-Q8 lists three resolutions. Hat A recommends (a): MCP returns only pseudonymised structured records, with no raw message or document text. Hat C decides in `06`.
