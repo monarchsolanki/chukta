@@ -21,17 +21,17 @@
 ## START HERE (one screen, verified 2026-09-11)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** `01-ARCHITECTURE.md` is approved, with the owner's findings F-01 to F-05 applied, and frozen for step 2 review. **Hat C (step 2) is in progress:** `06`, `12` and `reviews/SEC-REVIEW-ARCH.md`.
-- **Sequence change (owner, 2026-09-11):** Hat C runs now, ahead of Hat A's `02` to `05`. Hat C reviews the PRD, `01` and the ADRs. `02` to `05` get a Hat C delta pass when they are written (O-11).
-- **🛑 STOP after Hat C's three deliverables** (brief step 2).
+- **Current step:** Hat C's step 2 is complete. `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` are written and In Review. The review found 18 issues (1 Critical, 6 High), which Hat A resolves at step 4 (O-12).
+- **Sequence change (owner, 2026-09-11):** Hat C ran ahead of Hat A's `02` to `05`. Those get a Hat C delta pass when they are written (O-11).
+- **🛑 STOP.** Waiting for the owner's review of Hat C's work. Next, in the owner's order: Hat B's feasibility review (step 3), or Hat A's `02` to `05`.
 - **Everything is committed and pushed.** Run `git -C ~/chukta log --oneline` to confirm.
 
 | | Verified 2026-09-11 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01-ARCHITECTURE.md` · then the F-01 to F-05 fixes |
-| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (Frozen for step 2 review) |
-| Pending | Hat C now: `06`, `12`, SEC-REVIEW-ARCH. Then Hat A's 02 to 05, and ADRs for `01`'s D-01 to D-09 (O-08). IMPL-FEASIBILITY-REVIEW, 07 to 11 (Hat B). README, INDEX. |
+| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01-ARCHITECTURE.md` · `762d8b7` F-01 to F-05 fixes · then Hat C's `06`, `12` and SEC-REVIEW-ARCH |
+| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (Frozen for step 2 review), `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` (In Review) |
+| Pending | The owner's review of Hat C's work. Then, in the owner's order: Hat B's IMPL-FEASIBILITY-REVIEW (step 3), and Hat A's 02 to 05 with a Hat C delta pass (O-11). Step 4 promotes D-01 to D-09 and S-01 to S-14 to ADRs, and resolves SR-01 to SR-18. Then 07 to 11 (Hat B), README and INDEX. |
 | Statutory corpus | Empty by design. The owner loads verified text in build Phase 4 (PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -41,7 +41,7 @@
 |---|---|---|---|
 | 0 | A | Understanding, 19 recommendations, PRD TOC | ✅ Done 2026-09-11. All 19 adopted, six with modifications. |
 | 1 | A | 00 to 05, ADRs | 🟡 00-PRD and 01-ARCHITECTURE frozen for review. ADR-0001 to 0019 written. 02 to 05 not started: the owner moved Hat C ahead of them. |
-| 2 | C | 06, 12, SEC-REVIEW-ARCH | 🟡 In progress. Reviews 00, 01 and the ADRs. |
+| 2 | C | 06, 12, SEC-REVIEW-ARCH | ✅ Written 2026-09-11. 18 findings: 1 Critical, 6 High, 7 Medium, 4 Low. Awaiting the owner's review. |
 | 3 | B | IMPL-FEASIBILITY-REVIEW | Not started |
 | 4 | A, then a short C delta pass | Revisions, logged in ADRs | Not started |
 | 5 | B | 07 to 11 | Not started |
@@ -53,15 +53,17 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 
 | ID | Item | Owner | Blocks |
 |---|---|---|---|
-| O-03 | Verify every tag in PRD Appendix A against primary sources | Monarch | Statutory design freeze |
+| O-03 | Verify every tag in PRD Appendix A (V01 to V24) and `06` Appendix A (V25 to V43) against primary sources | Monarch | Statutory and data-protection design freeze |
 | O-04 | Load statute text per PRD Appendix B | Monarch | Build Phase 4 |
 | O-05 | Hand-write 80 Hinglish messages, with 2 or 3 other contributors | Monarch | Conversation eval |
 | O-06 | Confirm the `qwen3.6:27b` Ollama tag exists and fits the developer's machine (v1 has no GPU host, `01` A-Q5). If it does not fit, pick a smaller local model. Name the default frontier model. | Monarch, then ADR-0016 | Model routing design |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
 | O-08 | Promote the `01-ARCHITECTURE.md` decisions D-01 to D-09 to ADRs when Hat A's set closes. Until then, §15 of `01` is their only record. | Hat A | Step 1 close |
-| O-09 | Answer the architecture open questions A-Q1 to A-Q8 (`01` §16): mail provider and region, v1 runtime confirmation, egress mechanism in the target, auth and MFA, GPU affordability, OCR engine, region, and MCP versus P9 | Hats A, B and C, as listed in `01` §16 | Steps 2 to 5 |
+| O-09 | Answer the architecture open questions A-Q1 to A-Q8 (`01` §16): mail provider and region, v1 runtime confirmation, egress mechanism in the target, auth and MFA, GPU affordability, OCR engine, region, and MCP versus P9 | Hats A, B and C, as listed in `01` §16. Hat C answered A-Q3 (S-03), A-Q4 (S-02), A-Q7 (S-14) and A-Q8 (S-01) in `06`. Still open: A-Q1, A-Q2, A-Q5, A-Q6. | Steps 2 to 5 |
 | O-10 | The PRD has no requirement for approval-queue ageing. F-04 added only a signal and an alert in `01` §11. Add a requirement through an ADR at step 4. | Hat A | Step 4 |
 | O-11 | Hat C delta pass over `02` to `05` once they are written, because the owner moved Hat C ahead of them | Hat C | After `05` |
+| O-12 | Resolve SR-01 to SR-18 (`reviews/SEC-REVIEW-ARCH.md`). The Critical and High findings, SR-01 to SR-07, must be resolved before the build starts. | Hat A at step 4 | Build start |
+| O-13 | Promote the security decisions S-01 to S-14 (`06` §4) to ADRs, alongside `01`'s D-01 to D-09 (O-08) | Hat A at step 4 | Step 4 |
 
 ## Traps: easy to get wrong
 
@@ -76,6 +78,7 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 - **No em dashes in the docs.**
 - **Prisma must not manage LangGraph's tables** (ADR-0014).
 - **v1 has no GPU host and no AWS deployment** (F-03). It runs on `docker compose up` on a developer machine. The AWS topology in `01` §10.3 is a specified target, not something to build.
+- **Payment details are regulated tokens** (SR-01, `06` S-04). An account number, UPI ID, IFSC code, URL, email or phone in outbound prose must come from a slot, never from model text.
 
 ## Keeping this current is part of the job
 
@@ -117,7 +120,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
 | Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | In Review |
-| Reviews between hats | `reviews/` | Pending |
+| Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings, 1 Critical and 6 High | In Review. IMPL-FEASIBILITY-REVIEW pending (Hat B). |
 | Full index | `INDEX.md` | Final step |
 
 ---
@@ -125,6 +128,13 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · SEC-REVIEW-ARCH written. Hat C step 2 complete. STOP.
+- 18 findings against the PRD, `01` and the ADRs: 1 Critical, 6 High, 7 Medium, 4 Low. The Critical and High findings (SR-01 to SR-07) must be resolved before the build (O-12).
+- **SR-01 (Critical):** the gate's regulated tokens did not cover payment identifiers, URLs, emails or phones. A compromised buyer mailbox could get an attacker's bank details echoed into an approved reply. Fix: S-04.
+- SR-02 and SR-03 are the two new send paths, through Razorpay and MCP. SR-04 is the checkpoint schema sitting outside tenant isolation. SR-05 is pseudonymisation failing open. SR-06 is stored injection into drafting prompts. SR-07 is file-borne attacks.
+- Checked before commit: no dashes; the inline VERIFY set in `06`, `12` and the review equals `06` Appendix A; every T, S, ST, SR, DC and P reference resolves; every ADR, requirement, D- and A-Q reference resolves; the `06` diagram parses.
+- 🛑 STOP (brief step 2). Next, in the owner's order: Hat B's feasibility review (step 3), or Hat A's `02` to `05`.
 
 ### 2026-09-11 · 12-DATA-CLASSIFICATION written (Hat C)
 - Six classes (DC-0 to DC-5), plus a trust label kept separate from class. User-typed free text counts as untrusted for prompts.
@@ -235,6 +245,8 @@ A wrong fact or a missing requirement in a doc is a defect. IDs use `DOC-` for d
 Symptom and root cause are separate columns on purpose. In one LMS batch, every root cause turned out to differ from the reported symptom.
 
 *2026-09-11 note (F-05):* DOC-01's symptom cites "SM-23" in the old numbering on purpose, because it describes the defect. That metric is now SM-06. Every other SM reference in every document resolves to the metric it means (see the log).
+
+*2026-09-11 note (F-01):* decided by Hat C in `06` S-01, option (a), tightened. MCP returns pseudonymised structured records only, never raw text and never the body of an unapproved draft. The ADR lands at step 4 (O-13).
 
 ## Plans
 
