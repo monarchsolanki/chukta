@@ -21,16 +21,17 @@
 ## START HERE (one screen, verified 2026-09-11)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** Hat A, step 1. The PRD is frozen for review, all 19 ADRs are written, and `01-ARCHITECTURE.md` was written (In Review) at the owner's go on 2026-09-11.
-- **🛑 STOP.** `02-DATA-MODEL.md` waits for the owner's go. The owner is releasing Hat A's documents one at a time.
+- **Current step:** `01-ARCHITECTURE.md` is approved, with the owner's findings F-01 to F-05 applied, and frozen for step 2 review. **Hat C (step 2) is in progress:** `06`, `12` and `reviews/SEC-REVIEW-ARCH.md`.
+- **Sequence change (owner, 2026-09-11):** Hat C runs now, ahead of Hat A's `02` to `05`. Hat C reviews the PRD, `01` and the ADRs. `02` to `05` get a Hat C delta pass when they are written (O-11).
+- **🛑 STOP after Hat C's three deliverables** (brief step 2).
 - **Everything is committed and pushed.** Run `git -C ~/chukta log --oneline` to confirm.
 
 | | Verified 2026-09-11 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · then `01-ARCHITECTURE.md` |
-| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (In Review) |
-| Pending | 02 to 05 (Hat A), then ADRs for the D-01 to D-09 decisions in `01` (O-08). 06, 12, SEC-REVIEW-ARCH (Hat C). IMPL-FEASIBILITY-REVIEW, 07 to 11 (Hat B). README, INDEX. |
+| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01-ARCHITECTURE.md` · then the F-01 to F-05 fixes |
+| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (Frozen for step 2 review) |
+| Pending | Hat C now: `06`, `12`, SEC-REVIEW-ARCH. Then Hat A's 02 to 05, and ADRs for `01`'s D-01 to D-09 (O-08). IMPL-FEASIBILITY-REVIEW, 07 to 11 (Hat B). README, INDEX. |
 | Statutory corpus | Empty by design. The owner loads verified text in build Phase 4 (PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -39,8 +40,8 @@
 | Step | Hat | Deliverables | Status |
 |---|---|---|---|
 | 0 | A | Understanding, 19 recommendations, PRD TOC | ✅ Done 2026-09-11. All 19 adopted, six with modifications. |
-| 1 | A | 00 to 05, ADRs | 🟡 00-PRD frozen for review. ADR-0001 to 0019 written. 01-ARCHITECTURE written (In Review). **02 to 05 wait for the owner's go, one at a time.** |
-| 2 | C | 06, 12, SEC-REVIEW-ARCH | Not started |
+| 1 | A | 00 to 05, ADRs | 🟡 00-PRD and 01-ARCHITECTURE frozen for review. ADR-0001 to 0019 written. 02 to 05 not started: the owner moved Hat C ahead of them. |
+| 2 | C | 06, 12, SEC-REVIEW-ARCH | 🟡 In progress. Reviews 00, 01 and the ADRs. |
 | 3 | B | IMPL-FEASIBILITY-REVIEW | Not started |
 | 4 | A, then a short C delta pass | Revisions, logged in ADRs | Not started |
 | 5 | B | 07 to 11 | Not started |
@@ -55,10 +56,12 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 | O-03 | Verify every tag in PRD Appendix A against primary sources | Monarch | Statutory design freeze |
 | O-04 | Load statute text per PRD Appendix B | Monarch | Build Phase 4 |
 | O-05 | Hand-write 80 Hinglish messages, with 2 or 3 other contributors | Monarch | Conversation eval |
-| O-06 | Confirm the `qwen3.6:27b` Ollama tag exists, and name the default frontier model | Monarch, then ADR-0016 | Model routing design |
+| O-06 | Confirm the `qwen3.6:27b` Ollama tag exists and fits the developer's machine (v1 has no GPU host, `01` A-Q5). If it does not fit, pick a smaller local model. Name the default frontier model. | Monarch, then ADR-0016 | Model routing design |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
 | O-08 | Promote the `01-ARCHITECTURE.md` decisions D-01 to D-09 to ADRs when Hat A's set closes. Until then, §15 of `01` is their only record. | Hat A | Step 1 close |
-| O-09 | Answer the architecture open questions A-Q1 to A-Q7 (`01` §16): mail provider and region, deployment form, egress mechanism, auth and MFA, GPU schedule, OCR engine, region | Hats A, B and C, as listed in `01` §16 | Steps 2 to 5 |
+| O-09 | Answer the architecture open questions A-Q1 to A-Q8 (`01` §16): mail provider and region, v1 runtime confirmation, egress mechanism in the target, auth and MFA, GPU affordability, OCR engine, region, and MCP versus P9 | Hats A, B and C, as listed in `01` §16 | Steps 2 to 5 |
+| O-10 | The PRD has no requirement for approval-queue ageing. F-04 added only a signal and an alert in `01` §11. Add a requirement through an ADR at step 4. | Hat A | Step 4 |
+| O-11 | Hat C delta pass over `02` to `05` once they are written, because the owner moved Hat C ahead of them | Hat C | After `05` |
 
 ## Traps: easy to get wrong
 
@@ -72,6 +75,7 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 - **SM IDs run in reading order.** A new metric goes at the end of its block, or the whole table is renumbered by script and every reference updated (DOC-01).
 - **No em dashes in the docs.**
 - **Prisma must not manage LangGraph's tables** (ADR-0014).
+- **v1 has no GPU host and no AWS deployment** (F-03). It runs on `docker compose up` on a developer machine. The AWS topology in `01` §10.3 is a specified target, not something to build.
 
 ## Keeping this current is part of the job
 
@@ -101,7 +105,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | The original requirements | [`BRIEF.md`](BRIEF.md) | Frozen |
 | What we build, for whom, and how we measure it | [`00-PRD.md`](00-PRD.md) | Frozen for step 2 review |
 | Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0019, summarised in the decision register below | Written, In Review |
-| System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | In Review |
+| System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | Frozen for step 2 review |
 | Data model | `02-DATA-MODEL.md` | Pending (Hat A) |
 | Agent and engine design | `03-AGENT-DESIGN.md` | Pending (Hat A) |
 | Retrieval design | `04-RAG-DESIGN.md` | Pending (Hat A) |
@@ -121,6 +125,19 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · 01-ARCHITECTURE approved, owner findings F-01 to F-05 applied
+- **F-01 (High):** `01` now states the MCP versus P9 contradiction outright, and A-Q8 lists three resolutions. Hat A recommends (a): MCP returns only pseudonymised structured records, with no raw message or document text. Hat C decides in `06`.
+- **F-02 (Medium):** the MCP server was folded into the Console as a route. That removes a container, the MCP-to-Console token type and a second public surface. D-02 was reworded.
+- **F-03 (High):** v1 runs on `docker compose up` on a developer machine. A GPU instance in ap-south-1 costs roughly $900 to $1,100 a month on demand (owner's estimate), which this project will not pay. The AWS topology is kept as a specified-but-not-built target. D-03 holds under Compose networks, and the egress property is now tested on every CI push. D-06 was revised to native builds. One refinement to the owner's note: besides the proxy, nginx also sits on a routable network, because Docker cannot publish a port from an internal-only one. It runs no application code and cannot reach the data network.
+- **F-04 (Low):** approval-queue depth and age signal, with an alert. The PRD has no matching requirement yet (O-10).
+- **F-05 (Low), check only:**
+  - Commit `078b7d4` touched only the PRD. Its §10 rows went from `01..05, 23, 06..22` to `01..24`.
+  - All 56 PRD references moved under the single old-to-new mapping, in order, with only the two new SM-24 references added.
+  - All 61 SM references in files the script never touched (`01`, the ADRs, this file, the brief) resolve to the metric they mean.
+  - The one old-number citation is DOC-01's symptom. It is history, and it now carries a dated note.
+- **Sequence change:** the owner moved Hat C ahead of Hat A's `02` to `05` (O-11).
+- `01` status: Frozen for step 2 review. All 21 Mermaid diagrams in the PRD and `01` parse.
 
 ### 2026-09-11 · 01-ARCHITECTURE written (Hat A)
 - Written at the owner's go and committed with this update. It covers nine principles, the system context, six trust zones with egress only from the compute zone, component responsibilities with a "must never" column, four runtime sequences, durable execution, data stores, model routing and pseudonymisation, security hooks, deployment, observability and cost, NFR traceability, failure modes and extension points.
@@ -194,12 +211,18 @@ A wrong fact or a missing requirement in a doc is a defect. IDs use `DOC-` for d
 | DOC-03 | 2026-09-11, Hat A lint | Low | PRD Appendix A listed V02 as used in §5.8 and V13 in FR-STA-3, but no inline tag used either | Appendix A was written from the intended claim list, not generated from the tags actually in the text | `078b7d4`: V02 tagged in §5.8, V13 tagged in FR-STA-3 | Doc lint: the inline VERIFY set equals the Appendix A set | Fixed |
 | GAP-01 | 2026-09-11, owner review | High | Nothing stopped a runaway agent loop on the frontier model. NFR-12 covered API rate limits, not model spend. | Cost was treated as a number to report (SM-22), not a limit to enforce | `078b7d4`: NFR-14, a per-case spend circuit breaker, measured by SM-24 | SM-24 runaway-loop suite | Fixed in spec |
 | GAP-02 | 2026-09-11, owner review | High | FR-ING-4 and FR-CNV-3 routed to "a human queue" that no requirement defined: what enters, who works it, what it blocks, what happens when an item goes stale | Low-confidence routing was written as an exit on each flow. The queue itself was never specified as a component. | `078b7d4`: FR-HQ-1 to FR-HQ-6 | FR-HQ acceptance tests, detailed in `11` | Fixed in spec |
+| F-01 | 2026-09-11, owner review of `01` | High | P9 says raw counterparty content stays on our infrastructure, but the MCP endpoint hands data to the user's own MCP client, usually an LLM app pointed at a hosted model. That path bypasses the gateway, the pseudonymiser and trace masking. | P9 was written around the model gateway. The MCP component came from the brief's stack list and was never checked against the principles. | Contradiction stated in `01` §2. A-Q8 added with three resolutions and a recommendation. Hat C decides in `06`. | Principle-by-component check in the doc lint (planned in `11`) | Open until `06` decides |
+| F-02 | 2026-09-11, owner review of `01` | Medium | D-02 called the Console the only public application surface, while §3 routed Nginx to a separate MCP server too | D-02 was written about webhooks and the §3 diagram from the component list. Nothing cross-checked decision text against the diagrams. | MCP server folded into the Console as a route. D-02 reworded. §3, §4, §9 and §10 updated. | Doc lint: every public route in the diagrams belongs to a component that D-02 names | Fixed |
+| F-03 | 2026-09-11, owner review of `01` | High | §10 assumed a funded AWS deployment with a GPU host, and A-Q5 treated the GPU host as a scheduling question when it is not affordable at all | Cost was never checked against the project's budget before the topology was drawn | v1 is `docker compose up` on a developer machine, and AWS is a specified-but-not-built target. D-03 shown to hold under Compose networks and tested in CI. A-Q5 reframed. D-06 revised. | CI egress and network tests (`01` §10.1) | Fixed |
+| F-04 | 2026-09-11, owner review of `01` | Low | §11 alerted on review-queue age but not on approval-queue age, so a draft nobody approves would stall its case unnoticed | Ageing was specified for the review queue (FR-HQ-5) and not generalised to every queue | Approval-queue signal and alert in `01` §11. The PRD requirement is O-10. | Alert test in `11` | Fixed in `01`. PRD requirement open (O-10). |
 
 Symptom and root cause are separate columns on purpose. In one LMS batch, every root cause turned out to differ from the reported symptom.
 
+*2026-09-11 note (F-05):* DOC-01's symptom cites "SM-23" in the old numbering on purpose, because it describes the defect. That metric is now SM-06. Every other SM reference in every document resolves to the metric it means (see the log).
+
 ## Plans
 
-**Documentation phase (now):** the checkpoint tracker in Part 1. Next is Hat A's 02 to 05, each after the owner's go.
+**Documentation phase (now):** the checkpoint tracker in Part 1. Hat C (step 2) is next, ahead of Hat A's 02 to 05 at the owner's request. Those follow, with a Hat C delta pass (O-11).
 
 **Build phase:** 28 days, one developer. The phases are defined by Hat B in `09-BUILD-PLAN.md`. One fixed point is already known: statute text is loaded in Phase 4.
 
@@ -229,3 +252,7 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 - **Generate registers from the text.** Appendix A drifted from the inline tags as soon as it was written by hand (DOC-03).
 - **Check the premise behind an answer before acting on it.** "Use the same email as the LMS repo" pointed at the one address the owner had ruled out.
 - **Script mechanical edits, and make them all-or-nothing.** The SM renumber touched about 50 references. It ran as one script that refused to write unless every anchor matched exactly once.
+- **Check every component against every principle.** P9 was written around the model gateway, and the MCP endpoint was never tested against it (F-01).
+- **Cross-check decision text against the diagrams.** D-02 and the §3 diagram disagreed for a whole review cycle (F-02).
+- **Price the topology before drawing it.** The GPU host was designed in before anyone asked whether it was affordable (F-03).
+- **Apply a control to every instance of its pattern.** Ageing was specified for one queue and missed for the other (F-04).

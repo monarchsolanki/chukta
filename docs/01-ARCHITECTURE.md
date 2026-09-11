@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Defines the components, boundaries, runtime behaviour and deployment of Chukta v1, and shows how each PRD requirement is met. |
 | **Intended reader** | The developer building v1, and the Hat B and Hat C reviewers. Read the PRD first. |
-| **Status** | In Review |
+| **Status** | Frozen for step 2 review. Approved 2026-09-11, with the owner's findings F-01 to F-05 applied (§17). Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
 | **Last updated** | 2026-09-11 |
 | **Depends on** | [`00-PRD.md`](00-PRD.md) (Frozen for step 2 review) and [ADR-0001 to ADR-0019](adr/) |
@@ -46,7 +46,7 @@ flowchart LR
     CS["Collections staff"]
     CA["Read-only CA"]
   end
-  subgraph Chukta["Chukta (one AWS region)"]
+  subgraph Chukta["Chukta (developer machine in v1)"]
     SYS["Console, agent runtime,<br/>data stores"]
   end
   BUY["Buyer's AP team<br/>(counterparty, never a user)"]
@@ -72,7 +72,7 @@ flowchart LR
 
 - **No arrow runs from Chukta to the buyer.** The only path to a buyer is a person (P2, ADR-0011).
 - WhatsApp content arrives as chat exports and pastes, uploaded by a user. Chukta has no WhatsApp integration.
-- **Data leaves our infrastructure by four routes:** pseudonymised prompts, masked traces, payment-link requests, and whatever an MCP tool returns to the user's own MCP client. The last one is the least controlled. In v1 it carries synthetic data only, under ADR-0015's real-data gate, and Hat C must review it.
+- **Data leaves our infrastructure by four routes:** pseudonymised prompts, masked traces, payment-link requests, and whatever an MCP tool returns to the user's own MCP client. The first three pass through the model gateway or the egress proxy. **The fourth does not, and as written it contradicts P9.** An MCP client is usually an LLM app pointed at a hosted model we do not control, so raw content returned by an MCP tool would leave our infrastructure without pseudonymisation or trace masking. This is open question A-Q8, which carries a recommendation. Hat C decides it in `06`.
 
 ---
 
@@ -89,21 +89,20 @@ flowchart TB
     NG["Nginx<br/>TLS, rate limits, routing"]
   end
   subgraph Z2["Z2 Application (no internet egress)"]
-    WEB["Console: Next.js 15<br/>UI, BFF API, auth, RBAC,<br/>webhook receivers, Prisma"]
-    MCP["MCP server<br/>read and draft tools"]
+    WEB["Console: Next.js 15<br/>UI, BFF API, MCP endpoint,<br/>auth, RBAC, webhook receivers, Prisma"]
   end
   subgraph Z3["Z3 Internal compute (no inbound from internet)"]
     API["Agent API: FastAPI"]
     WK["Celery workers:<br/>ingest, model, graph queues"]
     BT["Scheduler: wake_at sweeper,<br/>outbox relay"]
     GW["Model gateway<br/>(library inside workers)"]
-    SLM["Local SLM: Ollama<br/>on the GPU host"]
+    SLM["Local SLM: Ollama<br/>native on the host machine in v1"]
     PX["Egress proxy<br/>domain allowlist"]
   end
   subgraph Z4["Z4 Data"]
     PG[("Postgres + pgvector<br/>schemas: app, agent_runtime")]
     RD[("Redis<br/>job transport only")]
-    S3[("S3<br/>raw files, rendered artifacts")]
+    S3[("Object store<br/>raw files, rendered artifacts")]
   end
   subgraph Z5["Z5 External processors"]
     FM["Hosted frontier model API"]
@@ -114,8 +113,6 @@ flowchart TB
   WH --> NG
   MC --> NG
   NG --> WEB
-  NG --> MCP
-  MCP -->|"user token, one tenant"| WEB
   WEB -->|"signed internal token"| API
   WEB --> PG
   WEB --> S3
@@ -127,7 +124,7 @@ flowchart TB
   WK --> PG
   WK --> S3
   WK --> GW
-  GW --> SLM
+  GW -->|"v1: through the proxy"| SLM
   GW --> PX
   WK --> PX
   PX -->|"pseudonymised"| FM
@@ -154,9 +151,9 @@ The "must never" column matters as much as the responsibilities. Each entry is e
 
 | Component | Runtime | Responsible for | Must never |
 |---|---|---|---|
-| Nginx | Container | TLS, rate limits per route and per client, request size limits, routing to the Console and MCP server | Expose FastAPI, Redis, Postgres or Ollama |
+| Nginx | Container | TLS, rate limits per route and per client, request size limits, routing to the Console, including its MCP endpoint | Expose FastAPI, Redis, Postgres or Ollama |
 | Console | Next.js 15, Node | UI, BFF API, sessions and MFA, RBAC and active-tenant checks, approval and review-queue screens, webhook receivers (verify, persist, acknowledge), Prisma migrations as sole owner | Call a model or any external API. Process a webhook payload inline. Depend on a messaging SDK. |
-| MCP server | Container | Read and draft tools for a user's MCP client. Calls the Console API with a user token scoped to one tenant. | Approve, send, waive, or read outside its token's tenant (FR-INT-3). Connect to Postgres directly. |
+| MCP endpoint | A route inside the Console (D-02) | Read and draft tools for a user's MCP client. Authenticated by an access token scoped to one tenant with read and draft rights, and checked by the same RBAC layer as the UI. What it may return is open under A-Q8. | Expose an approve, send or waive tool (FR-INT-3). Act outside its token's tenant. |
 | Agent API | FastAPI, Python | Internal endpoints: submit work, read agent outputs, resume a graph after approval. Verifies the Console's signed internal token. | Accept traffic from outside the private network |
 | Workers | Celery, Python | Three queues. `ingest`: OCR, layout inference, classification. `model`: model-bound tasks. `graph`: case runs, drafting, gate, rendering, payment links. | Send a message. There is no client to send with. |
 | Scheduler | Python | `wake_at` sweep, outbox relay, review-queue ageing and escalation (FR-HQ-5), daily spend-cap reset | Run business logic. It only enqueues. |
@@ -166,7 +163,7 @@ The "must never" column matters as much as the responsibilities. Each entry is e
 | Gate | Pure Python library | Slot scan, provision verification, tie-out, packet match (PRD §7.1, A2) | Be skipped. The approval queue accepts only gate-passed artifacts. |
 | Renderer | Library in workers | Templates to PDF and text, with the slot provenance map | Render a regulated token outside a slot |
 | Payments adapter | Receiver in Console, logic in workers | Payment-link creation after approval, and webhook application | Create a link for an unapproved artifact |
-| Local SLM | Ollama on the GPU host | Serves the configured local model | Be reachable from outside Z3 |
+| Local SLM | Ollama: native on the developer machine in v1, a GPU host in the production target | Serves the configured local model | Listen on anything but the local machine (v1) or the private network (target) |
 | Send adapter | Interface only | Contract and gate design in `07` | Be deployed in v1 |
 | Tally adapter | Interface only | Contract in `07` | Be deployed in v1 |
 
@@ -352,6 +349,7 @@ Table-level design is in `02-DATA-MODEL.md`. This section fixes where each kind 
 | S3 artifacts bucket | Rendered artifacts | Workers | Console, which offers the download for sending | Immutable. The object hash equals the approval-bound hash. |
 | Redis | Celery messages | Outbox relay, Agent API | Workers | Nothing durable. Anything lost is republished from the outbox (P3). |
 
+- In v1 the object store is MinIO and Postgres runs from a pgvector image, both in Compose (§10.1). The production target uses S3 and RDS.
 - The **pseudonym map** never leaves Postgres. It is never sent to a hosted model and never written to a trace.
 - Retention and deletion periods are set by Hat C in `12-DATA-CLASSIFICATION.md`.
 
@@ -392,12 +390,12 @@ Hat C designs the threat model in `06`. This table fixes where each control live
 |---|---|---|
 | Authentication | Auth.js database sessions in the Console. MFA for every role that can approve. | `06` |
 | Authorisation | The PRD §7.2 matrix is checked in the BFF on every action. The active tenant is pinned in the session. | `06` |
-| Service to service | The Console signs a short-lived internal token (tenant, user, role, purpose) for the Agent API. The MCP server uses user tokens scoped to one tenant with read and draft rights only. | `06`, `07` |
+| Service to service | The Console signs a short-lived internal token (tenant, user, role, purpose) for the Agent API. MCP clients present an access token scoped to one tenant with read and draft rights, and the Console checks it like any UI request. | `06`, `07` |
 | Tenant isolation | Bound tenant in retrieval and tools. RLS with `SET LOCAL`. The app's database role lacks `BYPASSRLS`, and tables use `FORCE ROW LEVEL SECURITY`. | ADR-0012, `02` |
 | Untrusted content | Stored with a trust label. A prompt builder wraps it in delimiters. Each node has a fixed tool set. Outputs must match strict schemas. | `03`, `06` |
 | Webhooks | Signature verification, timestamp window, event-ID dedupe, persist then acknowledge | `07` |
 | Egress | Only Z3 has egress, through a domain-allowlisted proxy. The Console has none. | D-03 |
-| Secrets | AWS Secrets Manager, read at container start. Never in images or the repo. | `06` |
+| Secrets | v1: a local env file that is never committed. Production target: AWS Secrets Manager, read at container start. Never in images or the repo. | `06` |
 | Audit | Append-only. The app role has INSERT only on the audit table. Each row carries the hash of the previous row. | D-08, `02` |
 | Approval gate | No send path. Approvals bind to a content hash. Payment links are created only after approval. | ADR-0011, PRD §7.1 |
 
@@ -405,13 +403,91 @@ Hat C designs the threat model in `06`. This table fixes where each control live
 
 ## 10. Deployment
 
-This is the v1 target on AWS, in one region (ap-south-1 proposed, A-Q7). Hat B decides the final deployment form (A-Q2).
+v1 runs with `docker compose up` on one developer machine, and nothing is deployed to AWS. A GPU host is not affordable for this project (A-Q5). The AWS topology in §10.3 is the documented production target. It is specified so that a later move is an implementation job, not a redesign. Hat B confirms this under A-Q2.
+
+### 10.1 v1 runtime: Docker Compose on a developer machine
+
+```mermaid
+flowchart LR
+  subgraph HOST["Developer machine"]
+    OLL["Ollama, native<br/>on the machine's GPU"]
+    NGX["nginx<br/>networks: edge, app"]
+    CON["console<br/>networks: app, data"]
+    DAT["agent-api, scheduler, postgres,<br/>redis, minio, prometheus<br/>network: data"]
+    WRK["workers<br/>networks: data, compute"]
+    PXY["egress proxy<br/>networks: compute, egress"]
+  end
+  BRW["Browser"] -->|"published HTTPS port"| NGX
+  NGX --> CON
+  CON --> DAT
+  WRK --> DAT
+  WRK -->|"the only exit"| PXY
+  PXY -->|"allowlisted domains"| NET["Model API, Langfuse,<br/>Razorpay test API"]
+  PXY -->|"host.docker.internal"| OLL
+```
+
+| Network | Type | Members | Route off the machine |
+|---|---|---|---|
+| `edge` | Normal bridge | nginx | Yes. Docker can publish a port only from a network that has a route out. |
+| `app` | `internal: true` | nginx, console | None |
+| `data` | `internal: true` | console, agent-api, workers, scheduler, postgres, redis, minio, prometheus | None |
+| `compute` | `internal: true` | workers, egress proxy | None |
+| `egress` | Normal bridge | egress proxy | Yes: allowlisted domains on port 443, and the host's Ollama port |
+
+**D-03 survives the move.** Here is each container:
+
+| Container | Zone | Can it reach the internet? | Why |
+|---|---|---|---|
+| console | Z2 | **No** | It is only on internal networks. It is not on `compute`, so it cannot even reach the proxy. |
+| workers | Z3 | Only through the proxy, and only to allowlisted domains | The proxy is the one member of `compute` with a route out |
+| agent-api, scheduler | Z3 | No | They are only on `data`, and neither needs egress |
+| postgres, redis, minio | Z4 | No | Only on `data` |
+| egress proxy | Z3 | Yes, to the allowlist only | The only container on `egress` |
+| nginx | Z1 | Technically yes | Docker cannot publish a port from an internal-only network, so nginx sits on `edge`. It runs no application code, holds no secrets, and is not on `data`, so it cannot reach Postgres or Redis. |
+
+So the proxy is the only exit that application code can use. nginx is the one other container on a routable network, and only because it has to publish a port.
+
+**The egress property is now tested on every CI push.** The layout that enforces D-03 is the same Compose file the developer runs. A CI job starts the stack on the runner and asserts four things:
+1. The console and worker containers cannot open a direct connection to any external address.
+2. Through the proxy, an allowlisted domain succeeds and any other domain is refused.
+3. The console cannot reach the proxy at all.
+4. nginx cannot open a connection to Postgres.
+
+Before this change, the property could be checked only in a deployed environment.
+
+- **Ollama runs natively.** Docker on macOS cannot use the Mac's GPU, and a model of about 27B is too slow on CPU. Workers reach Ollama through the proxy, whose allowlist includes the host's Ollama port. CI uses stub models instead. The configured model must fit the developer's machine (A-Q5, O-06 in `PROJECT_CONTEXT.md`).
+- **Object storage is MinIO,** and Postgres runs from a pgvector image. Secrets come from a local env file that is never committed.
+- **Webhooks:** routine tests and CI replay recorded fixtures, re-signed with a test secret. The live Razorpay test-mode loop reaches the machine through a tunnel to nginx's published port, started only for that test. The tunnel is a temporary public surface, and `06` covers it. Inbound mail uses fixture replay until A-Q1 is answered.
+- **Images are built from source** on the machine that runs them (D-06, revised).
+- **Backups:** Postgres dumps and the MinIO data directory, covered by the machine's own backup. A restore drill is part of `11`.
+
+### 10.2 Environments
+
+| Environment | Status in v1 | Models | Data |
+|---|---|---|---|
+| Local (Compose) | **The v1 runtime** | Native Ollama with the configured SLM, or a smaller tag of the same family when memory is short (evals never use it). The configured frontier model, reached through the proxy. | Synthetic |
+| CI (GitHub Actions) | Every push | Stub models only | Synthetic fixtures |
+| Production target (AWS) | Specified, not built | The configured SLM on a GPU host | Real data only after the pilot-readiness gate in `12` |
+
+```mermaid
+flowchart LR
+  A["Push or PR"] --> B["Lint, typecheck,<br/>unit tests"]
+  B --> C["Deterministic suites:<br/>gate, isolation, statutory set,<br/>B-1, spend cap, import rules,<br/>migration drift, doc lint"]
+  C --> D["docker compose up:<br/>egress and network tests"]
+  D --> E["Build images"]
+  E --> F["Done. Nothing deploys in v1."]
+  G["Manual, on the developer machine"] --> H["Model eval suites,<br/>cost-capped"]
+```
+
+SM-01, SM-02, SM-03, SM-06, SM-07, SM-08 and SM-24 need no real model, so they run on every push. Suites that need real models run by hand on the developer's machine, which keeps eval cost bounded.
+
+### 10.3 Production target (specified, not built)
 
 ```mermaid
 flowchart LR
   subgraph AWS["AWS, one region"]
     subgraph PUB["Public subnet"]
-      APP["App host, EC2, Docker Compose:<br/>Nginx, Console, MCP server,<br/>Agent API, workers, scheduler,<br/>Redis, egress proxy, Prometheus"]
+      APP["App host, EC2, Docker Compose:<br/>nginx, console, agent-api,<br/>workers, scheduler, redis,<br/>egress proxy, prometheus"]
     end
     subgraph PRIV["Private subnets"]
       GPU["GPU host, EC2:<br/>Ollama"]
@@ -430,29 +506,10 @@ flowchart LR
   APP --> SMG
 ```
 
-- **Egress is enforced on the host.** Firewall rules in the Docker host's `DOCKER-USER` chain let containers reach only the VPC: RDS, the GPU host, and VPC endpoints for S3, ECR and Secrets Manager. They can also reach the egress proxy. Only the proxy can reach the internet, and only the allowlisted domains on port 443 (D-03). AWS Network Firewall is the alternative (A-Q3).
-- **Model weights** are pulled once through the proxy when the GPU host is provisioned, and pinned by digest.
-- **One CPU architecture:** every image is built for `linux/amd64`, because the GPU host is x86 (D-06).
-- **Backups:** RDS automated backups with point-in-time recovery, a manual snapshot before every migration, and versioning on the artifacts bucket. A restore drill is part of `11`.
-
-| Environment | Purpose | Models | Data |
-|---|---|---|---|
-| Local | Development | Ollama on the developer's machine. A smaller tag of the same model family is allowed when memory is short, but evals never use it. | Synthetic |
-| CI | Every push | Deterministic suites use stub models. Model suites run on a schedule or on demand. | Synthetic fixtures |
-| Demo (AWS) | The only deployed environment in v1 | The configured SLM on the GPU host and the configured frontier model | Synthetic only, under ADR-0015's real-data gate |
-
-```mermaid
-flowchart LR
-  A["Push or PR"] --> B["Lint, typecheck,<br/>unit tests"]
-  B --> C["Deterministic suites:<br/>gate, isolation, statutory set,<br/>B-1, spend cap, import rules,<br/>migration drift, doc lint"]
-  C --> D["Build multi-stage images<br/>for linux/amd64"]
-  D --> E{"Branch is main?"}
-  E -- "yes" --> F["Push to ECR,<br/>deploy demo"]
-  E -- "no" --> G["Done"]
-  H["Schedule or manual"] --> I["Model eval suites,<br/>cost-capped"]
-```
-
-SM-01, SM-02, SM-03, SM-06, SM-07, SM-08 and SM-24 need no real model, so they run on every push. The suites that need real models run on a schedule, which keeps eval cost bounded.
+- The app host runs the same Compose file with the same networks. On top of that, firewall rules in the Docker host's `DOCKER-USER` chain limit container traffic to the VPC (RDS, the GPU host, and VPC endpoints for S3, ECR and Secrets Manager) and to the proxy. AWS Network Firewall is the alternative (A-Q3).
+- Model weights are pulled once through the proxy when the GPU host is provisioned, and pinned by digest.
+- The target pins `linux/amd64`, because its GPU host is x86 (D-06).
+- Backups: RDS automated backups with point-in-time recovery, a manual snapshot before every migration, and versioning on the artifacts bucket.
 
 ---
 
@@ -465,13 +522,14 @@ SM-01, SM-02, SM-03, SM-06, SM-07, SM-08 and SM-24 need no real model, so they r
 | Outbox lag: age of the oldest unpublished row | Scheduler | Redis or the relay is stuck (P3) |
 | `wake_at` lag: age of the oldest due row not yet run | Scheduler | Timers are firing late |
 | Review-queue depth and oldest age, by item type | Console | FR-HQ-6 |
+| Approval-queue depth and oldest pending age, by artifact type | Console | A draft nobody approves stalls its case, and nothing else would notice (F-04) |
 | Breaker trips | Gateway | NFR-14 |
 | Gate blocks by reason | Gate | A spike points at a prompt or template problem |
 | Webhook signature failures | Console | Attack or misconfiguration |
 | Model calls, tokens and cost by tier and task | Gateway | SM-21, SM-22 |
 | Dead-letter count | Workers | Nothing is dropped silently |
 
-- **Alerts** fire on: breaker trips, outbox lag, `wake_at` lag, a spike in signature failures, dead letters, and a review-queue item past its age limit. Thresholds are configuration, not targets.
+- **Alerts** fire on: breaker trips, outbox lag, `wake_at` lag, a spike in signature failures, dead letters, a review-queue item past its age limit, and an artifact waiting for approval past its age limit. The last one also flags the case to the owner in the Console. Thresholds are configuration, not targets.
 - **A nightly job re-scans approved artifacts with the gate scanner.** SM-01 says no artifact escapes the gate. This re-scan is how production would notice if one did, and a hit pages immediately.
 - **Cost per case** (SM-22) is computed from the spend ledger:
   - Hosted cost is the sum of the case's hosted calls, as tokens times the price from a versioned price table.
@@ -540,11 +598,11 @@ These are promoted to ADRs when Hat A's set closes. Until then, this table is th
 | ID | Decision | Why | Alternatives rejected |
 |---|---|---|---|
 | D-01 | All model calls go through one gateway library. CI fails if any other module imports a model SDK. | One place enforces routing, redaction, budget, validation, tracing and cost (P8) | A client per agent: every agent would reimplement the controls, and one would miss something |
-| D-02 | The Console receives all webhooks and is the only public application surface. The Agent API is internal only. | One public surface to secure. Receivers verify, persist and acknowledge, and the real work runs asynchronously. | Webhooks straight to FastAPI: a second public surface to harden |
-| D-03 | Only the compute zone has internet egress, through a domain-allowlisted proxy. All external API calls happen in workers. | Makes "no send path" and "data leaves only by three routes" checkable at the network layer | An allowlist in application code only: one new import away from a new egress path |
+| D-02 | The Console is the only public application surface. It receives all webhooks and serves the MCP endpoint as a route. The Agent API is internal only. *Revised 2026-09-11 (F-02): the separate MCP server was folded into the Console.* | One public surface to secure. Folding MCP in removes a container, the MCP-to-Console token type and a second public surface. Receivers verify, persist and acknowledge, and the real work runs asynchronously. | Webhooks straight to FastAPI, or a separate MCP container: each adds a public surface to harden |
+| D-03 | Only the compute zone has internet egress, through a domain-allowlisted proxy. All external API calls happen in workers. In v1, Compose networks enforce this and CI tests it on every push (§10.1). | Makes "no send path" and "data leaves only by known routes" checkable at the network layer | An allowlist in application code only: one new import away from a new egress path |
 | D-04 | No raw document image goes to a hosted model in v1. OCR and extraction run locally. | An image cannot be pseudonymised the way text can (P9) | Hosted vision for better accuracy: sends raw personal data out |
 | D-05 | Every timer compares against Postgres `now()` | One clock, so host skew cannot fire a timer early or miss it | Host time in each worker |
-| D-06 | Every image is built for `linux/amd64` | The GPU host is x86, and one architecture avoids mismatch bugs | Multi-arch builds: more CI time for no v1 benefit |
+| D-06 | v1 images are built from source on the machine that runs them, so they match its architecture: arm64 on an Apple Silicon Mac, amd64 on CI. No base image or dependency may be amd64-only. The production target pins `linux/amd64`, because its GPU host is x86. *Revised 2026-09-11 as a consequence of F-03.* | With no GPU host in v1, an amd64-only build would run under emulation on the machine v1 actually runs on | Force `linux/amd64` everywhere: slow emulation on the developer's machine |
 | D-07 | Case runs are serialised by a Postgres advisory lock plus a dirty flag | One run per case (ADR-0009) without losing a trigger that arrives mid-run | A lock alone: loses triggers. A queue per case: more moving parts. |
 | D-08 | Audit events are append-only and hash-chained. The app's database role has INSERT only on the audit table. | Tamper evidence for approvals, waivers and sent-marks | A plain table: edits could not be detected |
 | D-09 | Low-confidence fallback defaults to the review queue, not the frontier model | Keeps raw content local and cost bounded. A tenant can override per task once evals justify it (ADR-0016). | Automatic escalation to the frontier model |
@@ -556,9 +614,24 @@ These are promoted to ADRs when Hat A's set closes. Until then, this table is th
 | ID | Question | Answered by | Lands in |
 |---|---|---|---|
 | A-Q1 | Inbound mail provider: SES receiving or another provider, and whether it is available in the chosen region | Hat B, then an ADR | `07` |
-| A-Q2 | Deployment form: Docker Compose on one EC2 host (proposed) or ECS | Hat B | `09`, `10` |
-| A-Q3 | Egress enforcement: host firewall rules plus a proxy (proposed), or AWS Network Firewall | Hat C, Hat B | `06` |
+| A-Q2 | Confirm the v1 runtime: `docker compose up` on a developer machine (§10.1), with the AWS topology specified but not built (§10.3) | Hat B | `09`, `10` |
+| A-Q3 | Egress enforcement in the production target: host firewall rules plus the proxy (proposed), or AWS Network Firewall. In v1, Compose networks enforce it (§10.1). | Hat C, Hat B | `06` |
 | A-Q4 | Auth library details and MFA policy | Hat C | `06` |
-| A-Q5 | Is the GPU host always on, or started for eval runs and set hours? | Hat B, using SM-22 figures | `09` |
+| A-Q5 | **Affordability, not scheduling.** A GPU instance in ap-south-1 costs roughly $900 to $1,100 a month on demand (owner's estimate, 2026-09-11), and this project will not pay that. So v1 has no GPU host, and the configured SLM must run on the developer's machine. If it does not fit, O-06 picks a smaller local model and evals re-check ADR-0016's routing. The GPU host stays in the production target only. | Owner, then Hat B | `09`, O-06 in `PROJECT_CONTEXT.md` |
 | A-Q6 | A local OCR engine that meets SM-16 on synthetic scans | Hat A, through evals | `03`, `05` |
-| A-Q7 | Region: ap-south-1 proposed for data locality, to be confirmed by the DPDP analysis | Hat C | `12` |
+| A-Q7 | Region for the production target: ap-south-1 proposed for data locality, to be confirmed by the DPDP analysis | Hat C | `12` |
+| A-Q8 | **MCP contradicts P9.** P9 says raw counterparty content stays on our infrastructure. An MCP client is usually an LLM app pointed at a hosted model we do not control, so anything an MCP tool returns bypasses the gateway, the pseudonymiser and trace masking. As written, P9 and the MCP endpoint cannot both hold. There are three resolutions. **(a)** MCP tools return only pseudonymised content. **(b)** P9 gets a named carve-out for deliberate user export, with an audit event per call. **(c)** MCP is deferred out of v1. **Hat A recommends (a), narrowed:** tools return structured records (IDs, statuses, amounts, dates, document references) with personal identifiers pseudonymised, and no raw message or document text. That keeps P9 whole without a carve-out, keeps the brief's MCP interop, and reuses the pseudonymiser that already exists. If Hat B cuts MCP for time, (c) follows. | Hat C | `06` |
+
+---
+
+## 17. Revision history
+
+| Date | Change | Why |
+|---|---|---|
+| 2026-09-11 | First version | Hat A, step 1 |
+| 2026-09-11 | **F-01:** §2 now states the MCP versus P9 contradiction outright. A-Q8 added, with three resolutions and a recommendation. | Owner's review of `01` |
+| 2026-09-11 | **F-02:** the MCP server was folded into the Console as a route. D-02 reworded. §3, §4, §9 and §10 updated. | Owner's review |
+| 2026-09-11 | **F-03:** §10 rewritten. v1 runs on `docker compose up` on a developer machine, and the AWS topology is a specified-but-not-built production target. D-03 is shown to hold under Compose networks and is tested on every CI push. A-Q2, A-Q3 and A-Q5 reframed. D-06 revised to match. | Owner's review |
+| 2026-09-11 | **F-04:** approval-queue depth and age signal, with an alert (§11) | Owner's review |
+| 2026-09-11 | **F-05:** SM renumbering checked across every document. No change was needed in `01`. | Owner's review |
+| 2026-09-11 | Status set to Frozen for step 2 review | Approved by the owner |
