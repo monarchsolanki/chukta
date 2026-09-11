@@ -21,17 +21,18 @@
 ## START HERE (one screen, verified 2026-09-11)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** Hat C's step 2 is complete. `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` are written and In Review. The review found 18 issues (1 Critical, 6 High), which Hat A resolves at step 4 (O-12).
+- **Current step:** step 3 (Hat B) is complete. `reviews/IMPL-FEASIBILITY-REVIEW.md` is In Review, and `12` §9.2 now lists every item deferred from v1 (DF-01 to DF-16).
 - **Sequence change (owner, 2026-09-11):** Hat C ran ahead of Hat A's `02` to `05`. Those get a Hat C delta pass when they are written (O-11).
-- **Hat C was approved on 2026-09-11.** The owner's finding SEC-01 is recorded (O-14). **Hat B's feasibility review (step 3) is in progress.** STOP when it is done.
+- **Hat C was approved on 2026-09-11,** and the owner's finding SEC-01 is recorded (O-14). **The feasibility review's verdict:** the doc set is 65 to 70 days as written, and the committed v1 is 22.0 days against 20 planned. Three decisions need the owner (O-15).
+- **🛑 STOP.** Waiting for the owner's review of the feasibility review. Next: step 4, Hat A's revision.
 - **Everything is committed and pushed.** Run `git -C ~/chukta log --oneline` to confirm.
 
 | | Verified 2026-09-11 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01-ARCHITECTURE.md` · `762d8b7` F-01 to F-05 fixes · then Hat C's `06`, `12` and SEC-REVIEW-ARCH |
-| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (Frozen for step 2 review), `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` (In Review) |
-| Pending | The owner's review of Hat C's work. Then, in the owner's order: Hat B's IMPL-FEASIBILITY-REVIEW (step 3), and Hat A's 02 to 05 with a Hat C delta pass (O-11). Step 4 promotes D-01 to D-09 and S-01 to S-14 to ADRs, and resolves SR-01 to SR-18. Then 07 to 11 (Hat B), README and INDEX. |
+| Commits | `947cc5a` brief · `e50d320` PRD as approved · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01-ARCHITECTURE.md` · `762d8b7` F-01 to F-05 fixes · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` approval and SEC-01 · then the feasibility review |
+| Written | `BRIEF.md` (Frozen), `PROJECT_CONTEXT.md` (this file), `00-PRD.md` (Frozen for step 2 review), `adr/ADR-0001` to `ADR-0019` (In Review, all Accepted), `01-ARCHITECTURE.md` (Frozen for step 2 review), `06`, `12` and `reviews/SEC-REVIEW-ARCH.md` (Frozen for step 3 review), `reviews/IMPL-FEASIBILITY-REVIEW.md` (In Review) |
+| Pending | The owner's review of the feasibility review, and decisions OD-1 to OD-3 (O-15). Then step 4, Hat A's revision: it promotes D-01 to D-09 and S-01 to S-14 to ADRs, resolves SR-01 to SR-18 and SEC-01, and applies the feasibility review's §8 (O-16). Then Hat A's 02 to 05 with a Hat C delta pass (O-11), then 07 to 11 (Hat B), README and INDEX. |
 | Statutory corpus | Empty by design. The owner loads verified text in build Phase 4 (PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -42,7 +43,7 @@
 | 0 | A | Understanding, 19 recommendations, PRD TOC | ✅ Done 2026-09-11. All 19 adopted, six with modifications. |
 | 1 | A | 00 to 05, ADRs | 🟡 00-PRD and 01-ARCHITECTURE frozen for review. ADR-0001 to 0019 written. 02 to 05 not started: the owner moved Hat C ahead of them. |
 | 2 | C | 06, 12, SEC-REVIEW-ARCH | ✅ Approved 2026-09-11. 18 findings (1 Critical, 6 High, 7 Medium, 4 Low), plus the owner's SEC-01. |
-| 3 | B | IMPL-FEASIBILITY-REVIEW | 🟡 In progress |
+| 3 | B | IMPL-FEASIBILITY-REVIEW | ✅ Written 2026-09-11. As written, the doc set is 65 to 70 days. The committed v1 is 22.0 days against 20 planned. Awaiting the owner's review. |
 | 4 | A, then a short C delta pass | Revisions, logged in ADRs | Not started |
 | 5 | B | 07 to 11 | Not started |
 | 6 | Final | README, INDEX | Not started |
@@ -65,6 +66,8 @@ O-01 (commit identity) and O-02 (remote) closed on 2026-09-11. See the log.
 | O-12 | Resolve SR-01 to SR-18 (`reviews/SEC-REVIEW-ARCH.md`). The Critical and High findings, SR-01 to SR-07, must be resolved before the build starts. | Hat A at step 4 | Build start |
 | O-13 | Promote the security decisions S-01 to S-14 (`06` §4) to ADRs, alongside `01`'s D-01 to D-09 (O-08) | Hat A at step 4 | Step 4 |
 | O-14 | SEC-01: specify the migration role and the runtime role in `02-DATA-MODEL.md`, and state which role each component connects as | Hat A | `02` |
+| O-15 | Decide OD-1 (defer the RAG layer), OD-2 (Razorpay to build-if-time) and OD-3 (evidence packets to build-if-time), from the feasibility review §5.2. If there is no decision, Hat B's recommendations apply. | Monarch | Build day 12 |
+| O-16 | Apply the feasibility review's §8 changes to the PRD, the ADRs, `01` and `06`, through ADRs | Hat A at step 4 | Step 4 |
 
 ## Traps: easy to get wrong
 
@@ -114,14 +117,14 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | Agent and engine design | `03-AGENT-DESIGN.md` | Pending (Hat A) |
 | Retrieval design | `04-RAG-DESIGN.md` | Pending (Hat A) |
 | Evaluation plan | `05-EVAL-PLAN.md` | Pending (Hat A) |
-| Threat model: threats, deep dives, security decisions S-01 to S-14, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | In Review |
+| Threat model: threats, deep dives, security decisions S-01 to S-14, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | Frozen for step 3 review |
 | API contracts, including the send adapter and Tally adapter interfaces | `07-API-CONTRACTS.md` | Pending (Hat B) |
 | Synthetic data | `08-SYNTHETIC-DATA-SPEC.md` | Pending (Hat B) |
 | The 28-day build plan | `09-BUILD-PLAN.md` | Pending (Hat B) |
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
-| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | In Review |
-| Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings, 1 Critical and 6 High | In Review. IMPL-FEASIBILITY-REVIEW pending (Hat B). |
+| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Frozen for step 3 review. §9.2 added by the feasibility review. |
+| Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings plus SEC-01. [`reviews/IMPL-FEASIBILITY-REVIEW.md`](reviews/IMPL-FEASIBILITY-REVIEW.md): what fits in 28 days, the cuts, the build order. | Security review approved. Feasibility review In Review. |
 | Full index | `INDEX.md` | Final step |
 
 ---
@@ -129,6 +132,16 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · IMPL-FEASIBILITY-REVIEW written (Hat B, step 3). STOP.
+- **As written, the doc set is 65 to 70 developer-days.** 28 days holds about 20 planned. The committed v1 is 22.0 days at midpoint: 2 over, stated openly, with a scope rule at the day-12 checkpoint.
+- **v1 is:** the four claims (isolation, citation gate, no send path, spend cap), the statutory engine as the gate's carrier (L4 notice, template-only), and two AI slices, Reconciliation and Conversation.
+- **Security suites:** Hat B agrees with the owner's four non-negotiables and adds ST-01 (stub half), ST-05 and ST-07 (role matrix), plus ST-08 if Razorpay ships. The reason is that the PRD states seven safety invariants, not four. The additions cost 1.25 days. Nine suites are committed.
+- **Authentication:** full S-02 costs 4.5 days, and v1 needs 1.0. MFA, step-up and recovery codes become DF-01.
+- **Cuts are labelled, not dropped:** DF-01 to DF-16 are in `12` §9.2. Build-if-time items have declared fallbacks (DF-17 to DF-22, and SK-06). SK-01 to SK-06 are skipped, with reasons.
+- **Owner decisions (O-15):** OD-1 defer the RAG layer, which conflicts with the brief. OD-2 move Razorpay to build-if-time. OD-3 move evidence packets to build-if-time.
+- Checked before commit: no dashes, every B, DF, SK, OD, ST, S, T, SR, O, requirement, D-, A-Q and ADR reference resolves, and the Gantt chart parses.
+- 🛑 STOP (brief step 3).
 
 ### 2026-09-11 · Hat C approved. Owner finding SEC-01 recorded.
 - The owner approved `06`, `12` and the review, and confirmed SR-01 to SR-04 as genuine. SR-02 found a send path that would have defeated ADR-0011 in production.
@@ -257,9 +270,9 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 
 ## Plans
 
-**Documentation phase (now):** the checkpoint tracker in Part 1. Hat C (step 2) is next, ahead of Hat A's 02 to 05 at the owner's request. Those follow, with a Hat C delta pass (O-11).
+**Documentation phase (now):** the checkpoint tracker in Part 1. Step 4, Hat A's revision, is next. Then Hat A's 02 to 05 with a Hat C delta pass (O-11), then Hat B's 07 to 11.
 
-**Build phase:** 28 days, one developer. The phases are defined by Hat B in `09-BUILD-PLAN.md`. One fixed point is already known: statute text is loaded in Phase 4.
+**Build phase:** 28 days and one developer, which is 24 working days: 20 planned and 4 of contingency. The feasibility review §6 sets the order. All four claim suites pass by elapsed day 12, and the statute text is loaded in Phase 4 (days 21 to 24). `09-BUILD-PLAN.md` formalises this.
 
 **After v1.** Out of scope, recorded here so they are not lost:
 
@@ -272,6 +285,18 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 | Account Aggregator or bank feeds | NG8 | Consent flows |
 | MSEFC or Samadhaan filing workflow | NG6 | Legal review |
 | More languages | Out of v1 language scope | A human-written eval set per language |
+
+**Deferred from v1 by the feasibility review (DF).** DF-01 to DF-16 are pilot-gate items in `12` §9.2. Each is marked Required or needing a decision. Build-if-time items not built by day 24 join them as DF-17 to DF-22.
+
+**Skipped (SK).** Not built, not in the pilot gate, and back only through a new ADR:
+- SK-01 the G6 entailment check and SM-18
+- SK-02 model prose in statutory artifacts
+- SK-03 the review-queue digest
+- SK-04 AWS Network Firewall
+- SK-05 a staging environment
+- SK-06 real-data detection, if it is not built
+
+The reasons are in the feasibility review §5.4.
 
 ## Lessons carried over from the LMS project
 
@@ -292,3 +317,4 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 - **Price the topology before drawing it.** The GPU host was designed in before anyone asked whether it was affordable (F-03).
 - **Apply a control to every instance of its pattern.** Ageing was specified for one queue and missed for the other (F-04).
 - **Check each control against the configuration other documents give the same component.** `06` required a runtime role that owns nothing, while `01` had the same Console run migrations (SEC-01).
+- **Add up the scope against the calendar at every checkpoint, not once at the end.** The doc set grew to three times the build window before anyone totalled it (feasibility review §2).

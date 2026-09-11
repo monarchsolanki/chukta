@@ -157,6 +157,8 @@ Uploads often carry far more personal data than a case needs (T-18). Minimise at
 
 No real tenant and no real personal data until every condition below is met and recorded in `PROJECT_CONTEXT.md`. Meeting them is what lifts ADR-0015's real-data gate.
 
+### 9.1 Conditions
+
 | # | Condition | Why | Owner |
 |---|---|---|---|
 | 1 | Chukta's role confirmed: Data Processor for tenant data, Data Fiduciary for its own users [VERIFY V37] | Decides who owes which duty | Owner, with counsel |
@@ -172,3 +174,39 @@ No real tenant and no real personal data until every condition below is met and 
 | 11 | ADR-0015's replacement decided: Langfuse Cloud with masking and a processing agreement, or self-hosting | Traces carry data | Owner, Hat A |
 | 12 | An external penetration test of the deployed target | Nothing has attacked it yet | Owner |
 | 13 | The commencement status of the DPDP Act and Rules checked on the day [VERIFY V33] | Obligations are phasing in | Owner |
+
+### 9.2 Deferred from v1
+
+These rows were written by Hat B's feasibility review (`reviews/IMPL-FEASIBILITY-REVIEW.md`), at the owner's direction, so that nothing cut from v1 is lost. Each row is a pilot-gate item. A **Required** row must be built before any real data. A **Decide** row needs an explicit decision before the pilot: either build it, or re-label it as skipped through an ADR.
+
+| ID | Deferred item | Came from | Before the pilot |
+|---|---|---|---|
+| DF-01 | TOTP MFA, step-up and recovery codes, and ST-07's MFA and step-up cases | `06` S-02 | **Required** (condition 9) |
+| DF-02 | Malware scanning, and the full file-borne suite ST-10 | `06` S-08 | **Required** |
+| DF-03 | Minimisation tooling at import, and ST-15 | §5 | **Required** before any real export or bank statement is imported |
+| DF-04 | Erasure tooling | §6 | **Required** (condition 6) |
+| DF-05 | Prometheus metrics and alerts, including approval-queue and review-queue ageing | `01` §11 | **Required** |
+| DF-06 | OCR, plus classification and extraction of scanned documents | PRD FR-ING-4, `01` A-Q6 | Decide. Real evidence arrives as scans. |
+| DF-07 | Text-PDF and scanned-PDF ledgers and bank statements | PRD FR-ING-2 | Decide |
+| DF-08 | Live inbound mail and WhatsApp export import | PRD FR-ING-3, `01` A-Q1 | Decide. A pilot cannot run on fixtures. WhatsApp import brings DF-03 with it. |
+| DF-09 | The dispute agent, its trajectory evals, and SM-19 and SM-20 | PRD FR-DSP-1 | Decide |
+| DF-10 | The analyst: DSO, CEI, forecast and chase list | PRD FR-ANL-1, FR-ANL-2 | Decide |
+| DF-11 | The RAG layer: hybrid retrieval, reranking, three corpora, multi-hop, and SM-17. The entity graph stays in v1. | Brief §2, `04` | Decide. **This conflicts with the brief, so the owner decides now.** |
+| DF-12 | The MCP endpoint. Until it exists, `06` S-01 option (c) applies. | PRD FR-INT-3 | Decide. If it is built, S-01's constraints and ST-06's MCP cases are required. |
+| DF-13 | Devanagari inbound support and its eval set | PRD §3.1 | Decide |
+| DF-14 | Hosted calls that carry free text (the frontier explanation of residuals), and the name-finding pseudonymisation pass they need | `01` §8, `06` S-05 | **Required together.** No hosted free-text call happens before the full pipeline exists. |
+| DF-15 | The L3 interest-statement template | PRD §5.8 | Decide. L4 carries the gate claim in v1. |
+| DF-16 | A mapping step for non-standard register layouts | PRD FR-ING-1 | Decide. The Tally adapter may replace it. |
+
+- **Build-if-time items** that are not built by the end of v1 join this table then, as DF-17 to DF-22. The feasibility review §5.3 pre-declares which ID each one takes.
+- **Skipped items (SK-nn) are deliberately not here.** They are not pilot-gate items, and they come back only through an ADR. They are listed in the feasibility review §5.4 and in `PROJECT_CONTEXT.md`.
+
+---
+
+## 10. Revision history
+
+| Date | Change | Why |
+|---|---|---|
+| 2026-09-11 | First version | Hat C, step 2 |
+| 2026-09-11 | Approved by the owner, and frozen for step 3 review | Owner's review |
+| 2026-09-11 | §9 split into 9.1 (conditions) and 9.2 (items deferred from v1, DF-01 to DF-16) | The feasibility review, at the owner's direction: deferred items must go into the pilot gate, not be dropped |
