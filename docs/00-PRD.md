@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Defines what Chukta v1 does, who it is for, and how we will know it works. Every other design doc implements this one. |
 | **Intended reader** | The developer building v1, the Hat B and Hat C reviewers, and the owner who verifies statutory claims against primary sources. |
-| **Status** | In Review (Hat A, checkpoint after the PRD) |
+| **Status** | Frozen for step 2 review. Approved 2026-09-11, with fixes DOC-01, DOC-03, GAP-01 and GAP-02 applied (bug register in `PROJECT_CONTEXT.md`). Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
 | **Last updated** | 2026-09-11 |
 | **Source brief** | [`BRIEF.md`](BRIEF.md). Decisions that change the brief are in Appendix C. |
@@ -305,7 +305,7 @@ sequenceDiagram
 The two statutory levers have different shapes across the year. Chukta models this explicitly.
 
 - **s.16 interest is the year-round lever.** It accrues from the day after the statutory due date [VERIFY V11: MSMED Act 2006 s.16], and it is not deductible for the buyer [VERIFY V14: MSMED Act 2006 s.23].
-- **The 43B(h) rule is the January to March lever.** It has an effect only when a qualifying invoice's statutory due date has passed and the invoice is still unpaid at 31 March. The buyer's deduction then moves to the tax year of payment [VERIFY V01: Income-tax Act 1961 s.43B(h)], [VERIFY V05: exposure arises only if the due date is on or before 31 March]. **This is a deferral, not a loss.**
+- **The 43B(h) rule is the January to March lever.** It has an effect only when a qualifying invoice's statutory due date has passed and the invoice is still unpaid at 31 March. The buyer's deduction then moves to the tax year of payment [VERIFY V01: Income-tax Act 1961 s.43B(h)], [VERIFY V05: exposure arises only if the due date is on or before 31 March]. The cut-off is 31 March, not the return filing date [VERIFY V02: Income-tax Act 1961 s.43B, first proviso]. **This is a deferral, not a loss.**
 
 ```mermaid
 gantt
@@ -380,7 +380,7 @@ stateDiagram-v2
 |---|---|---|
 | Active | At least one invoice needs an action now | A draft or task is produced |
 | Waiting | Every invoice waits on the buyer or a timer, and `wake_at` is set | A message, upload, webhook or timer arrives |
-| NeedsHuman | A task or triage item blocks progress | A human resolves it |
+| NeedsHuman | Human-queue items block every remaining step (FR-HQ-4), or the model-spend cap was hit (NFR-14) | A human resolves the items, or the owner raises the cap or resumes the case |
 | Closed | No open invoices | A new invoice or a payment reversal reopens it |
 
 Case and invoice state live in Postgres. LangGraph checkpoints live in a separate schema (ADR-0014). A case resumes after days through the `wake_at` sweep, not through a held process (ADR-0013).
@@ -444,7 +444,7 @@ The brief's seven agents become:
 - two deterministic engines: Statutory and Analyst
 - one deterministic orchestrator
 
-Model calls concentrate in three places: reading at ingestion, writing prose around slotted facts, and dispute reasoning. The share of calls that stays on the local SLM is SM-20 (§10).
+Model calls concentrate in three places: reading at ingestion, writing prose around slotted facts, and dispute reasoning. The share of calls that stays on the local SLM is SM-21 (§10).
 
 ---
 
@@ -495,9 +495,9 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
 | FR-ING-1 | Load invoice, customer and payment registers from CSV or XLSX in a documented schema, with a mapping step for other layouts | LLM+code | Every seed row loads, or is rejected with a row-level reason. Nothing is dropped silently. |
-| FR-ING-2 | Parse counterparty ledgers and bank statements from XLSX, CSV, text PDF and scanned PDF | LLM+code | Each statement ties out, or is flagged with the gap (SM-08) |
+| FR-ING-2 | Parse counterparty ledgers and bank statements from XLSX, CSV, text PDF and scanned PDF | LLM+code | Each statement ties out, or is flagged with the gap (SM-09) |
 | FR-ING-3 | Ingest messages from the forwarding address, manual paste and WhatsApp chat exports | code | Each message is stored once with channel, sender, time and raw content. Duplicates are dropped. |
-| FR-ING-4 | Classify uploaded documents and extract key fields | LLM+code | SM-15. Low confidence goes to a human queue. |
+| FR-ING-4 | Classify uploaded documents and extract key fields | LLM+code | SM-16. Low confidence goes to the human review queue (FR-HQ). |
 | FR-ING-5 | Treat all ingested content as data. It cannot change instructions, tools, tenant or approval state. | code | SM-04 = 0 |
 
 **Cases**
@@ -505,15 +505,15 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
 | FR-CASE-1 | One durable case per customer account, with a state machine per invoice | code | State survives restarts. A case resumed after a simulated 10-day wait continues at the correct step. |
-| FR-CASE-2 | Wake on message, upload, webhook or `wake_at` | code | Each timer fires once (SM-23) |
+| FR-CASE-2 | Wake on message, upload, webhook or `wake_at` | code | Each timer fires once (SM-06) |
 | FR-CASE-3 | At most one outbound draft per account per wake | code | An account with three invoices at different steps yields exactly one draft |
-| FR-CASE-4 | Apply the ladder, including B-1 (§5.8) | code | SM-07 |
+| FR-CASE-4 | Apply the ladder, including B-1 (§5.8) | code | SM-08 |
 
 **Evidence**
 
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
-| FR-EVD-1 | Map an AP request to document types and invoice references | LLM+code | SM-14 |
+| FR-EVD-1 | Map an AP request to document types and invoice references | LLM+code | SM-15 |
 | FR-EVD-2 | Link documents into the entity graph (customer, PO, invoice, challan, GRN, payment, dispute, credit note) | LLM+code | Every link records the field it was based on. A human can unlink. |
 | FR-EVD-3 | Assemble a packet of exactly the requested items, with an index and a missing-items list | code | No unrequested item is ever included |
 
@@ -521,18 +521,18 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
-| FR-REC-1 | Match counterparty rows to the internal ledger and bank credits, deterministic rules first | code | SM-09 |
-| FR-REC-2 | Propose causes for residuals from narrations. Code verifies each one. | LLM+code | No cause is accepted unless its amount reconciles (SM-10) |
-| FR-REC-3 | Emit a BCS itemised by cause: TDS, credit note, short-pay, timing, missing entry, unexplained | code | Their balance plus the items equals our balance exactly, or the BCS is blocked (SM-11) |
+| FR-REC-1 | Match counterparty rows to the internal ledger and bank credits, deterministic rules first | code | SM-10 |
+| FR-REC-2 | Propose causes for residuals from narrations. Code verifies each one. | LLM+code | No cause is accepted unless its amount reconciles (SM-11) |
+| FR-REC-3 | Emit a BCS itemised by cause: TDS, credit note, short-pay, timing, missing entry, unexplained | code | Their balance plus the items equals our balance exactly, or the BCS is blocked (SM-12) |
 
 **Statutory** (qualifying subset only)
 
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
-| FR-STA-1 | Determine eligibility per invoice, with reason codes (§3.2) | code | Every invoice is qualifying, not qualifying with codes, or undetermined with the missing input (SM-06) |
-| FR-STA-2 | Compute the statutory due date from the acceptance date and payment terms | code | SM-06. An unknown acceptance date returns "cannot compute". |
-| FR-STA-3 | Compute s.16 interest with named, versioned parameters and an effective-dated bank-rate table | code | SM-06. The output lists every parameter used. |
-| FR-STA-4 | Compute 43B(h) exposure by date under B-1 | code | SM-07. Wording is always "moves to the tax year of payment". |
+| FR-STA-1 | Determine eligibility per invoice, with reason codes (§3.2) | code | Every invoice is qualifying, not qualifying with codes, or undetermined with the missing input (SM-07) |
+| FR-STA-2 | Compute the statutory due date from the acceptance date and payment terms | code | SM-07. An unknown acceptance date returns "cannot compute". |
+| FR-STA-3 | Compute s.16 interest with named, versioned parameters and an effective-dated bank-rate table [VERIFY V13: RBI Bank Rate history] | code | SM-07. The output lists every parameter used. |
+| FR-STA-4 | Compute 43B(h) exposure by date under B-1 | code | SM-08. Wording is always "moves to the tax year of payment". |
 | FR-STA-5 | Draft notices from templates with fact and citation slots | LLM+code | SM-01 = 0 |
 | FR-STA-6 | Load statute text with provenance. Unverified provisions cannot be cited. | code | Corpus starts empty. Statutory drafts are blocked until provisions are verified. |
 
@@ -540,13 +540,26 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
-| FR-CNV-1 | Multi-label classification: promise_to_pay, dispute, document_request, paid_with_utr, short_pay, other | LLM | SM-12, reported per source |
-| FR-CNV-2 | Extract UTR, amounts, dates and invoice refs, and validate them in code | LLM+code | SM-13. Invalid extractions go to a human. |
-| FR-CNV-3 | Route low-confidence and unsupported-language messages to a human | code | They never change case state automatically |
-| FR-DSP-1 | Investigate a dispute against challan, GRN, POD, complaint thread and prior credit notes | LLM+code | SM-18, SM-19. Every finding cites a span. |
+| FR-CNV-1 | Multi-label classification: promise_to_pay, dispute, document_request, paid_with_utr, short_pay, other | LLM | SM-13, reported per source |
+| FR-CNV-2 | Extract UTR, amounts, dates and invoice refs, and validate them in code | LLM+code | SM-14. Invalid extractions go to a human. |
+| FR-CNV-3 | Route low-confidence and unsupported-language messages to the human review queue (FR-HQ) | code | They never change case state automatically |
+| FR-DSP-1 | Investigate a dispute against challan, GRN, POD, complaint thread and prior credit notes | LLM+code | SM-19, SM-20. Every finding cites a span. |
 | FR-DSP-2 | Flag a written objection within 15 days of delivery as an acceptance-date change | LLM+code | Due date recomputes after a human confirms |
 | FR-ANL-1 | DSO, CEI, ageing and cash forecast | code | Matches reference calculations on the seed data |
 | FR-ANL-2 | Given amount X by date D, rank invoices to chase, with reasons | code | Same inputs give the same ranking. Each row shows its inputs. |
+
+**Human review queue**
+
+Low-confidence and high-impact model outputs wait here for a person. Much of the correctness story rests on this queue, so it has its own requirements.
+
+| ID | Requirement | Driver | Acceptance criterion |
+|---|---|---|---|
+| FR-HQ-1 | **What enters.** Always: acceptance-date confirmations, payment-term extractions, dispute acceptance-change flags, and a claimed UTR with no matching bank credit. On condition: any model output below its task threshold, any failed code validation, unsupported languages, document classifications below threshold, and ledgers that do not tie out. Each item records its type, source record, the model's proposal, confidence, reason, and the case and invoice it affects. | code | Every routing path (FR-ING-2, FR-ING-4, FR-CNV-2, FR-CNV-3, FR-STA-2, FR-DSP-2, §5.4) creates an item with all fields set |
+| FR-HQ-2 | **Who works it.** Items route by type. Acceptance dates, payment terms and dispute flags go to the owner. Ledger mappings, document classifications and UTR checks go to the accountant. Message triage goes to collections staff or the accountant. A read-only CA can comment but not resolve. | code | Role test: each item type can be resolved only by its roles |
+| FR-HQ-3 | **Resolution.** Accept the proposal, correct it, or reject it. Each resolution is an audit event with who, when, and the before and after values. | code | Every resolution appears in the audit log with before and after values |
+| FR-HQ-4 | **Blocking is scoped to dependents.** A pending item blocks only the work that depends on it. A pending acceptance date blocks statutory steps for that invoice, not L0 to L2 reminders. A pending triage item blocks only the state changes its message would cause. Other invoices and steps in the case carry on. | code | No state change derived from an unresolved item ever happens. A case with a pending item still advances its independent invoices. |
+| FR-HQ-5 | **Stale items escalate. Nothing auto-resolves.** Each item type has a configurable age limit. On breach the item escalates to the owner (console flag and daily digest) and keeps blocking its dependents. Nothing is ever accepted by timeout. A human may bulk-close items made obsolete by later events, with a reason. | code | Timeout test: an aged item escalates and its dependents stay blocked |
+| FR-HQ-6 | **Visibility and dedupe.** The case view lists pending items and what each one blocks. The owner sees queue depth and oldest age by type. The chase list (FR-ANL-2) marks invoices blocked by an item. One underlying question creates one item, not many. | code | A duplicate trigger yields one item. Blocked invoices are marked in the chase list. |
 
 **Payments, approval, audit, interfaces**
 
@@ -574,12 +587,13 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 | NFR-05 | **Auditability.** Append-only audit log. Every artifact can be reproduced from its recorded inputs. | Replay test | 100% of sampled artifacts reproduce [System] |
 | NFR-06 | **Determinism.** Engines (statutory, analytics, matching) are pure functions of inputs and versioned parameters. | Repeat-run test | Identical output across runs [System] |
 | NFR-07 | **Durability.** Cases, timers and the outbox live in Postgres and survive restarts (ADR-0013). | Kill-and-restart test mid-case | 100% of cases resume at the correct step [System] |
-| NFR-08 | **Exactly-once effects.** Webhooks, timers and the outbox relay are idempotent. | Duplicate-delivery test | SM-23 = 100% [System] |
+| NFR-08 | **Exactly-once effects.** Webhooks, timers and the outbox relay are idempotent. | Duplicate-delivery test | SM-06 = 100% [System] |
 | NFR-09 | **Statutory versioning.** Provisions, bank rates and method parameters are effective-dated. | Recompute a past case | Uses the values in force on that date [System] |
 | NFR-10 | **Observability.** Every model call is traced with tenant, case, model, tokens and cost. Traces are masked (ADR-0015). | Trace coverage over an eval run | 100% of calls traced [System] |
-| NFR-11 | **Cost reporting.** Cost per case is reported with and without amortised local GPU time. | Eval run report | Both figures in every run (SM-21) |
+| NFR-11 | **Cost reporting.** Cost per case is reported with and without amortised local GPU time. | Eval run report | Both figures in every run (SM-22) |
 | NFR-12 | **Security baseline.** RBAC per §7.2, sessions, secrets, webhook verification, rate limits. | Defined in `06` | Set in `06` |
-| NFR-13 | **Latency.** Ledger upload to BCS draft. | Timed eval run on reference hardware, defined in `05` | SM-22 [System] |
+| NFR-13 | **Latency.** Ledger upload to BCS draft. | Timed eval run on reference hardware, defined in `05` | SM-23 [System] |
+| NFR-14 | **Model-spend circuit breaker.** Each case has hard caps on model calls and tokens, per wake and over its lifetime, with a separate, lower cap on frontier-model tokens. Reaching any cap halts the case before the next model call, moves it to NeedsHuman with reason `SPEND_CAP`, and writes an audit event. Only the owner can raise the cap or resume the case. A per-tenant daily cap backs this up. Cap values are tenant configuration set in `03`. They are limits, not targets. NFR-12 rate limits do not cover model spend. | Runaway-loop suite: a node forced to loop on the frontier model, and on the SLM | SM-24 = 100% [System] |
 
 ---
 
@@ -612,34 +626,35 @@ This is the most important section. It separates what we can measure now from wh
 | SM-03 | Approval bypass | Final artifacts or payment links with no matching approval record | Static check that no send path exists and links are created only by the approval handler, plus a runtime reconciliation of the audit log against artifacts | All | 0 [System] |
 | SM-04 | Injection-induced change | State changes, tool calls or tenant switches caused by instructions embedded in ingested content | Injection suite (`06`) | A | 0 [System] |
 | SM-05 | Unredacted identifiers sent to hosted models | Names, phone numbers, emails or individual PANs found in logged hosted-model payloads | PII scanner over every hosted payload in an eval run | G, H, A | 0 [System] |
-| SM-23 | Exactly-once effects | Duplicate webhooks, timers and outbox messages that produce exactly one effect, divided by all duplicates injected | Duplicate-delivery test | A | 100% [System] |
+| SM-06 | Exactly-once effects | Duplicate webhooks, timers and outbox messages that produce exactly one effect, divided by all duplicates injected | Duplicate-delivery test | A | 100% [System] |
 
 **Correctness**
 
 | ID | Metric | Definition | Method | Sources | Target |
 |---|---|---|---|---|---|
-| SM-06 | Statutory engine exactness | Cases where eligibility (state and reason codes), due date and s.16 interest all match the hand computation, to the day and the rupee | Reference cases with stated parameters | R | 100% [System] |
-| SM-07 | B-1 behaviour | Cases where the ladder step and wording follow §5.8. Covers dates either side of 1 Jan, 31 Mar and 1 Apr, and due dates either side of 31 Mar. | Reference cases with a frozen "today" | R | 100% [System] |
-| SM-08 | Ledger parse tie-out | Statements that tie out with no human mapping fix, divided by all statements | Each seeded layout | G, H | G ≥ 95%, H ≥ 90% [System] |
-| SM-09 | Line-match precision and recall | Precision is correct matches over matches made. Recall is correct matches over true matches. | Seeded ledger pairs with ground truth | G | Precision ≥ 0.98, recall ≥ 0.95 [System]. Precision is set higher on purpose, because a false match hides a real difference. |
-| SM-10 | Residual cause accuracy | Residual items given the correct cause | Seeded pairs with known causes | G, H | ≥ 0.90 [System] |
-| SM-11 | BCS tie-out invariant | BCS artifacts emitted that do not tie out | Check on every BCS | All | 0 [System] |
-| SM-12 | Reply classification | Macro-F1 over the six labels, multi-label | Held-out labelled messages | H and G, separately | H ≥ 0.85 with interval shown; G ≥ 0.90 [System] |
-| SM-13 | Entity extraction | Exact match per field: UTR, amount, date, invoice ref | Labelled messages | H, G | G ≥ 0.95 per field; H ≥ 0.90 per field [System] |
-| SM-14 | AP request parsing | Precision and recall of requested document types and invoice refs | Labelled AP requests | G, H | ≥ 0.95 each [System] |
-| SM-15 | Document classification | Type accuracy, and field accuracy per field | Synthetic scans with layout and image noise | G | Type ≥ 0.95, fields ≥ 0.90 [System]. Synthetic scans understate how hard real phone photos are. |
-| SM-16 | Retrieval quality | recall@10 and MRR on the evidence, contractual and conversational corpora | Labelled query-to-chunk pairs | G, H | recall@10 ≥ 0.90, MRR ≥ 0.70 [System] |
-| SM-17 | Citation faithfulness | Cited spans that actually support the sentence they are attached to | Second-layer judge, plus a human spot check of a sample | G | ≥ 0.95 [System] |
-| SM-18 | Dispute assessment agreement | Assessments matching the labelled validity (supported, partly, unsupported, insufficient) | Labelled dispute cases | G, H | ≥ 0.80 [System] |
-| SM-19 | Dispute evidence recall | Cases where every labelled required evidence item was retrieved during the investigation | Trajectory eval | G, H | ≥ 0.90 [System] |
+| SM-07 | Statutory engine exactness | Cases where eligibility (state and reason codes), due date and s.16 interest all match the hand computation, to the day and the rupee | Reference cases with stated parameters | R | 100% [System] |
+| SM-08 | B-1 behaviour | Cases where the ladder step and wording follow §5.8. Covers dates either side of 1 Jan, 31 Mar and 1 Apr, and due dates either side of 31 Mar. | Reference cases with a frozen "today" | R | 100% [System] |
+| SM-09 | Ledger parse tie-out | Statements that tie out with no human mapping fix, divided by all statements | Each seeded layout | G, H | G ≥ 95%, H ≥ 90% [System] |
+| SM-10 | Line-match precision and recall | Precision is correct matches over matches made. Recall is correct matches over true matches. | Seeded ledger pairs with ground truth | G | Precision ≥ 0.98, recall ≥ 0.95 [System]. Precision is set higher on purpose, because a false match hides a real difference. |
+| SM-11 | Residual cause accuracy | Residual items given the correct cause | Seeded pairs with known causes | G, H | ≥ 0.90 [System] |
+| SM-12 | BCS tie-out invariant | BCS artifacts emitted that do not tie out | Check on every BCS | All | 0 [System] |
+| SM-13 | Reply classification | Macro-F1 over the six labels, multi-label | Held-out labelled messages | H and G, separately | H ≥ 0.85 with interval shown; G ≥ 0.90 [System] |
+| SM-14 | Entity extraction | Exact match per field: UTR, amount, date, invoice ref | Labelled messages | H, G | G ≥ 0.95 per field; H ≥ 0.90 per field [System] |
+| SM-15 | AP request parsing | Precision and recall of requested document types and invoice refs | Labelled AP requests | G, H | ≥ 0.95 each [System] |
+| SM-16 | Document classification | Type accuracy, and field accuracy per field | Synthetic scans with layout and image noise | G | Type ≥ 0.95, fields ≥ 0.90 [System]. Synthetic scans understate how hard real phone photos are. |
+| SM-17 | Retrieval quality | recall@10 and MRR on the evidence, contractual and conversational corpora | Labelled query-to-chunk pairs | G, H | recall@10 ≥ 0.90, MRR ≥ 0.70 [System] |
+| SM-18 | Citation faithfulness | Cited spans that actually support the sentence they are attached to | Second-layer judge, plus a human spot check of a sample | G | ≥ 0.95 [System] |
+| SM-19 | Dispute assessment agreement | Assessments matching the labelled validity (supported, partly, unsupported, insufficient) | Labelled dispute cases | G, H | ≥ 0.80 [System] |
+| SM-20 | Dispute evidence recall | Cases where every labelled required evidence item was retrieved during the investigation | Trajectory eval | G, H | ≥ 0.90 [System] |
 
 **Efficiency**
 
 | ID | Metric | Definition | Method | Sources | Target |
 |---|---|---|---|---|---|
-| SM-20 | Local SLM share | Local SLM calls divided by all model calls | Traces over an eval run | All | ≥ 80% [System], from the brief |
-| SM-21 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
-| SM-22 | Ledger-to-BCS latency | p95 time from uploading a ledger of up to 500 rows to the BCS draft | Timed run on reference hardware | G | ≤ 3 minutes [System] |
+| SM-21 | Local SLM share | Local SLM calls divided by all model calls | Traces over an eval run | All | ≥ 80% [System], from the brief |
+| SM-22 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
+| SM-23 | Ledger-to-BCS latency | p95 time from uploading a ledger of up to 500 rows to the BCS draft | Timed run on reference hardware | G | ≤ 3 minutes [System] |
+| SM-24 | Spend-cap enforcement | Seeded runaway cases in which no model call starts after a cap is reached and an audit event is written, divided by all seeded runaway cases | Runaway-loop suite: frontier and SLM loops, per-wake and lifetime caps | A | 100% [System] |
 
 ### 10.3 Business outcome metrics (need a pilot)
 
@@ -677,7 +692,7 @@ This is the most important section. It separates what we can measure now from wh
 | R-02 | The qualifying subset is small | Statutory delivers limited value | Positioned as a subset feature (§1.3). BO-10 measures the subset. |
 | R-03 | Synthetic data is unlike real layouts, scans and Hinglish | Metrics overstate quality | Per-source reporting, the H set, and §10.4 |
 | R-04 | A statutory notice damages the buyer relationship | The seller loses a customer | The ladder clears blockers first (B-1 rule 7). Owner approval, CA review by default, BO-09 guardrail. |
-| R-05 | The local SLM is too weak for Hinglish | More frontier calls, higher cost, more data leaving | SM-12 decides routing per task. Pseudonymisation before hosted calls (NFR-03). |
+| R-05 | The local SLM is too weak for Hinglish | More frontier calls, higher cost, more data leaving | SM-13 decides routing per task. Pseudonymisation before hosted calls (NFR-03). |
 | R-06 | Prompt injection through buyer content | Wrong state change or data leak | NFR-04. Mitigation design in `06`. |
 | R-07 | The 1961 to 2025 Act transition is unclear | Wrong 43B(h) wording | Invoices that straddle 1 April 2026 stay undetermined (B-1 rule 6) [VERIFY V04] |
 | R-08 | OCR on phone photos is unreliable | Wrong acceptance dates feed statutory dates | Acceptance dates need human confirmation. Low-confidence extractions go to a queue. |
@@ -844,8 +859,8 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 
 | ADR | Decision | Where it shows up here |
 |---|---|---|
-| 0001 | The 43B(h) rule is a year-end deferral, as named behaviour B-1 | §1.1, §5.8, FR-STA-4, SM-07 |
-| 0002 | The statutory clock starts at acceptance, and disputes can reset it | §3.2, §5.5, FR-STA-2, FR-DSP-2 |
+| 0001 | The 43B(h) rule is a year-end deferral, as named behaviour B-1 | §1.1, §5.8, FR-STA-4, SM-08 |
+| 0002 | The statutory clock starts at acceptance, and disputes can reset it | §3.2, §5.5, FR-STA-2, FR-DSP-2, FR-HQ-1 |
 | 0003 | Per-invoice eligibility. Statutory is a subset feature. | §1.3, §3.2, §3.3, BO-10 |
 | 0004 | s.16 method parameters and the bank-rate table | §5.3, FR-STA-3, NFR-09 |
 | 0005 | Owner-supplied verified statute text | §5.3, FR-STA-6, Appendix B |
@@ -859,7 +874,7 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 0013 | Celery, Postgres `wake_at` timers, outbox | §5, §5.9, NFR-07, NFR-08 |
 | 0014 | A separate Postgres schema for the agent runtime | §5.9 |
 | 0015 | Langfuse Cloud with trace masking | NFR-10 |
-| 0016 | Model routing: local SLM for privacy, frontier model behind an interface | §6.2, NFR-03, SM-20, SM-21 |
+| 0016 | Model routing: local SLM for privacy, frontier model behind an interface | §6.2, NFR-03, NFR-14, SM-21, SM-22 |
 | 0017 | H set, generation by another model family, per-source metrics | §10.1 |
 | 0018 | Hat C delta pass after step 4 | Process only (`PROJECT_CONTEXT.md`) |
 | 0019 | Repo conventions and the verbatim brief | Header, `BRIEF.md` |
