@@ -116,7 +116,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | The 28-day build plan | `09-BUILD-PLAN.md` | Pending (Hat B) |
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
-| Data classification | `12-DATA-CLASSIFICATION.md` | Pending (Hat C) |
+| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | In Review |
 | Reviews between hats | `reviews/` | Pending |
 | Full index | `INDEX.md` | Final step |
 
@@ -125,6 +125,14 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-11 · 12-DATA-CLASSIFICATION written (Hat C)
+- Six classes (DC-0 to DC-5), plus a trust label kept separate from class. User-typed free text counts as untrusted for prompts.
+- An inventory of 23 data items, each with its class, storage, hosted-model eligibility, retention and erasure path. Statutory retention periods are tagged, never stated.
+- Minimisation at import for WhatsApp exports, bank statements and email.
+- Residency: ap-south-1 for the production target, answering A-Q7 together with `06` S-14.
+- Synthetic data is built to be impossible to confuse with real data (invalid check characters, reserved domains, non-mobile ranges), and real-looking data is flagged.
+- A 13-point pilot-readiness gate that must pass before ADR-0015's real-data gate lifts.
 
 ### 2026-09-11 · 06-SECURITY-THREAT-MODEL written (Hat C)
 - 24 threats, each with an inherent and a residual severity, and six adversaries, the model itself among them.
