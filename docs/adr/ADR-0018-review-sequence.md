@@ -5,7 +5,7 @@
 | **Purpose** | Records how the three-hat review sequence handles the security docs the brief left unplaced. |
 | **Intended reader** | Anyone running the next steps of the documentation sequence. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0035 (2026-09-12). |
 | **Related** | BRIEF §3; PROJECT_CONTEXT checkpoint tracker |
 
 ## Context

@@ -5,7 +5,7 @@
 | **Purpose** | Records where traces go in v1, and what must change before any real data exists. |
 | **Intended reader** | Anyone working on observability, evals, cost reporting or data protection. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0030 (2026-09-12). |
 | **Related** | PRD NFR-03, NFR-10, SM-05; ADR-0016 |
 
 ## Context

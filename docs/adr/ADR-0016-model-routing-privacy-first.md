@@ -5,7 +5,7 @@
 | **Purpose** | Records how model calls are routed between the local SLM and a hosted frontier model, and why. |
 | **Intended reader** | Anyone working on model calls, redaction, infrastructure sizing or cost reporting. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0021 and ADR-0034 (2026-09-12). |
 | **Related** | PRD §6.2, NFR-03, NFR-14, SM-05, SM-13, SM-21, SM-22; ADR-0015 |
 
 ## Context

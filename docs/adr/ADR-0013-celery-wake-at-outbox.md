@@ -5,7 +5,7 @@
 | **Purpose** | Records the job system choice the brief asked for, and how multi-day waits and cross-store commits are handled. |
 | **Intended reader** | Anyone working on workers, case resumption, timers or idempotency. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the Postgres-only queue is rejected, with the reason recorded below. |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the Postgres-only queue is rejected, with the reason recorded below. Amended at step 4 by ADR-0022 (2026-09-12). |
 | **Related** | PRD §5, §5.9, FR-CASE-2, NFR-07, NFR-08, SM-06; ADR-0009, ADR-0014 |
 
 ## Context

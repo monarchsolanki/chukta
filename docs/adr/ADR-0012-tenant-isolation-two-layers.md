@@ -5,7 +5,7 @@
 | **Purpose** | Records how one seller's data is kept from every other seller, and why there are two enforcement points. |
 | **Intended reader** | Anyone working on data access, retrieval, agent tools, background jobs or the threat model. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0027 (2026-09-12). |
 | **Related** | PRD §2, NFR-02, SM-02; ADR-0013, ADR-0014 |
 
 ## Context

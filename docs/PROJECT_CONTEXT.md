@@ -221,7 +221,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 
 ## Decision register
 
-One row per ADR. The ADR file holds the full reasoning, and this row holds the one-line why. All rows were accepted at checkpoint 1 on 2026-09-11. The files are in [`adr/`](adr/), committed in `75cc43c`.
+One row per ADR. The ADR file holds the full reasoning, and this row holds the one-line why. ADR-0001 to 0019 were accepted at checkpoint 1 on 2026-09-11 (`75cc43c`). ADR-0020 to 0035 were accepted at step 4 on 2026-09-12. ADR-0010 to 0018 were amended at step 4, as each file's header shows. The files are in [`adr/`](adr/).
 
 | ADR | Decision | Why, in one line | Modified at checkpoint 1 |
 |---|---|---|---|
@@ -244,6 +244,27 @@ One row per ADR. The ADR file holds the full reasoning, and this row holds the o
 | [0017](adr/ADR-0017-eval-data-sources.md) | A human-written Hinglish set, generation by a different model family, and metrics split by source | Generation by the same model family inflates scores | Yes. The owner and 2 or 3 others write 80 messages. Never report a blended number. |
 | [0018](adr/ADR-0018-review-sequence.md) | Hat C writes 06 and 12 at step 2, with a delta pass after step 4 | Otherwise the threat model describes the design before revision | No |
 | [0019](adr/ADR-0019-repo-conventions.md) | Repo conventions: location, noreply identity, no Claude attribution, one commit per deliverable, dual ADR status, verbatim brief | Traceability, and the owner's standing rules | Extended 2026-09-11 with the identity and attribution rules |
+
+**Step 4 decisions (2026-09-12)**
+
+| ADR | Decision | Why, in one line | Resolves or amends |
+|---|---|---|---|
+| [0020](adr/ADR-0020-v1-runtime-network-and-region.md) | v1 runs on Compose on a developer machine. Only workers have egress. ap-south-1 for the target. | Records D-02, D-03, D-06, S-03, S-12 and S-14 after F-02 and F-03 | Resolves SR-13, SR-17, SR-18, A-Q2, A-Q3, A-Q7 |
+| [0021](adr/ADR-0021-model-gateway-fail-closed.md) | One model gateway. Pseudonymisation fails closed. In v1, hosted calls are drafting only. | SR-05 and SR-16, and nothing in v1 needs free-text hosted calls | Amends 0016. Resolves D-01, D-04, D-09, S-05. |
+| [0022](adr/ADR-0022-durable-execution-details.md) | Database clock, advisory lock with a dirty flag, outbox relay inside the scheduler | Records D-05 and D-07 | Amends 0013 |
+| [0023](adr/ADR-0023-audit-log-integrity.md) | Append-only audit in v1. The hash chain and external anchor are build-if-time. | SR-10: a chain inside the database proves nothing on its own | Resolves D-08, S-10 |
+| [0024](adr/ADR-0024-citation-gate-extended.md) | Payment identifiers join the regulated tokens. Echo check. Statutory artifacts are template-only. | SR-01 (Critical): payment redirection through approved prose | Amends 0010. Narrows SK-01; SM-18 moves to Phase 2. |
+| [0025](adr/ADR-0025-no-third-party-send-paths.md) | No third-party send paths. Razorpay hardened and build-if-time. | SR-02: Razorpay could message the buyer itself | Amends 0011. Resolves SR-08, SR-12, OD-2. |
+| [0026](adr/ADR-0026-mcp-deferred-with-constraints.md) | MCP deferred from v1, with its constraints fixed | SR-03 and F-01: MCP versus P9, and unapproved drafts | Closes A-Q8 and F-01 |
+| [0027](adr/ADR-0027-isolation-checkpoints-and-db-roles.md) | Checkpoints under tenant isolation. Separate migration and runtime roles. | SR-04, and the owner's SEC-01 | Amends 0012 and 0014 |
+| [0028](adr/ADR-0028-authentication-v1-minimum.md) | v1 authentication is passwords, sessions and RBAC. MFA waits for the pilot gate. | Full S-02 costs 4.5 days that protect nothing in v1 | Resolves S-02, SR-09, DF-01 |
+| [0029](adr/ADR-0029-untrusted-content-boundaries.md) | Drafting sees only typed facts. User text is untrusted. Cheap file controls. No fetching. | SR-06, SR-07, SR-11 and SR-15 | Resolves S-08, S-09 |
+| [0030](adr/ADR-0030-tracing-alerts-real-data-gate.md) | The spend ledger is the cost truth. Langfuse is build-if-time. Alerts are deferred. The real-data gate lives in the schema. | SR-14: a flag alone relies on memory | Amends 0015. Resolves S-11. |
+| [0031](adr/ADR-0031-v1-scope.md) | The v1 scope of record: B1 to B15, build-if-time order, DF and SK lists, PRD changes, FR-APR-3 | The doc set was three times the window | Resolves OD-3 and O-10 |
+| [0032](adr/ADR-0032-phase-2-dispute-agent-and-rag.md) | Phase 2: the dispute agent with its RAG layer, 8 days, hard stop | Retrieval engineering is deferred for v1, not dropped | The owner's correction to OD-1 |
+| [0033](adr/ADR-0033-statute-verification-by-day-21.md) | V01 to V24 verified by build day 21 | FB-01: the old trigger never fired | Amends the feasibility review §7 |
+| [0034](adr/ADR-0034-sm21-reported-with-its-cause.md) | SM-21 is always reported with its cause | FB-02: a side effect of scope must not read as optimisation | Amends 0016 and 0017 |
+| [0035](adr/ADR-0035-hat-c-before-02-to-05.md) | Hat C ran before Hat A's 02 to 05, with a second delta pass | Records the owner's sequence change, which until now lived only in this file | Amends 0018 |
 
 ## Bug register
 

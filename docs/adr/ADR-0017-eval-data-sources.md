@@ -5,7 +5,7 @@
 | **Purpose** | Records where evaluation data comes from and how results are reported, so synthetic scores cannot flatter the system. |
 | **Intended reader** | Anyone building the golden set, running evals or reporting metrics. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the owner and 2 or 3 contributors write 80 messages, and no blended number is ever reported. |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the owner and 2 or 3 contributors write 80 messages, and no blended number is ever reported. Amended at step 4 by ADR-0034 (2026-09-12). |
 | **Related** | PRD §10.1, SM-13, SM-14 |
 
 ## Context

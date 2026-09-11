@@ -5,7 +5,7 @@
 | **Purpose** | Records why Chukta v1 cannot transmit messages, what replaces sending, and what payment integration stays in scope. |
 | **Intended reader** | Anyone working on approval, outbound artifacts, payments, egress rules or the threat model. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the send adapter is specified in 07. Razorpay test-mode links and webhooks are in scope. |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Modified: the send adapter is specified in 07. Razorpay test-mode links and webhooks are in scope. Amended at step 4 by ADR-0025 (2026-09-12). |
 | **Related** | PRD §1.3, §3.1, §5.7, §7.1, NG1, NG7, FR-INT-2, FR-PAY-1, FR-PAY-2, SM-03 |
 
 ## Context

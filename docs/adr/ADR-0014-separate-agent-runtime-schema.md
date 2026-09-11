@@ -5,7 +5,7 @@
 | **Purpose** | Records who owns which tables and migrations, so Prisma and LangGraph never fight over the database. |
 | **Intended reader** | Anyone working on migrations, the data model, the Python data layer or database operations. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0027 (2026-09-12). |
 | **Related** | PRD §5.9; ADR-0012, ADR-0013 |
 
 ## Context

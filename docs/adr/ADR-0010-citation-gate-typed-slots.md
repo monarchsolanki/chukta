@@ -5,7 +5,7 @@
 | **Purpose** | Records how Chukta guarantees that no fact or citation reaches an approver without a bound source. |
 | **Intended reader** | Anyone working on templates, drafting, the gate, or its adversarial tests. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-11 (checkpoint 1) |
+| **Decision status** | Accepted, 2026-09-11 (checkpoint 1). Amended at step 4 by ADR-0024 (2026-09-12). |
 | **Related** | PRD §7.1 (A2, A3), FR-STA-5, SM-01, SM-18; ADR-0005, ADR-0008 |
 
 ## Context
