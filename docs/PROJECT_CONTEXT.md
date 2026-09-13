@@ -21,17 +21,17 @@
 ## START HERE (one screen, verified 2026-09-12)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** step 4 (Hat A's revision) is done. ADR-0020 to ADR-0035 record every decision, and the PRD, `01`, `06` and the feasibility review are revised to match. **Hat C's delta 1 (ADR-0018) is in progress.**
+- **Current step:** step 4 (Hat A's revision) is done. ADR-0020 to ADR-0035 record every decision, and the PRD, `01`, `06` and the feasibility review are revised to match (`f9ca1c2`). **Hat C's delta 1 is done:** every finding is resolved or explicitly scheduled, and delta 1 found 6 new issues, one of them High (DLT-02, O-19).
 - **v1 in one line:** the four claims (tenant isolation, citation gate, no send path, spend cap) tested by build day 12, the statutory engine as the gate's carrier, and two AI slices, Reconciliation and Conversation, in 24 working days (ADR-0031). **Phase 2** follows: 8 days with a hard stop, the dispute agent with its RAG layer (ADR-0032).
-- **🛑 STOP after Hat C's delta 1.** Next, in the owner's order: Hat A's `02` to `05`, then Hat C's delta 2 (ADR-0035).
-- **Needs the owner:** O-17, confirm Phase 2's metric set.
+- **🛑 STOP.** Waiting for the owner's review of step 4 and delta 1. Next, in the owner's order: resolve DLT-02 before `03`, then Hat A's `02` to `05`, then Hat C's delta 2 (ADR-0035).
+- **Needs the owner:** O-17 (confirm Phase 2's metric set) and O-19 (how to resolve the delta-1 findings).
 
 | | Verified 2026-09-12 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · then the step-4 revisions |
+| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · then delta 1 |
 | Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md` and `06-SECURITY-THREAT-MODEL.md` (revised at step 4, frozen for the delta pass). `12-DATA-CLASSIFICATION.md` (frozen). ADR-0001 to 0035 (In Review, all Accepted). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
-| Pending | Hat C's delta 1. Then Hat A's 02 to 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. |
+| Pending | The owner's review of step 4 and delta 1, and O-19. Then Hat A's 02 to 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. |
 | Statutory corpus | Empty by design. The owner loads verified text by build day 21 (ADR-0033, PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -44,7 +44,7 @@
 | 2 | C | 06, 12, SEC-REVIEW-ARCH | ✅ Approved 2026-09-11, plus the owner's SEC-01 |
 | 3 | B | IMPL-FEASIBILITY-REVIEW | ✅ Approved 2026-09-11, with OD-1 to OD-3 decided |
 | 4 | A | Revision: ADR-0020 to 0035 and document revisions | ✅ Done 2026-09-12 |
-| 4b | C | Delta 1 over the step-4 revision | 🟡 In progress |
+| 4b | C | Delta 1 over the step-4 revision | ✅ Done 2026-09-12. 6 new findings (DLT-01 to DLT-06), one High. Awaiting the owner's review. |
 | 5a | A | 02 to 05 | Not started |
 | 5b | C | Delta 2 over 02 to 05 | Not started |
 | 5c | B | 07 to 11 | Not started |
@@ -62,10 +62,11 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 | O-06 | Confirm the `qwen3.6:27b` Ollama tag exists and fits the developer's machine (v1 has no GPU host). If it does not fit, pick a smaller local model. Name the default frontier model. | Monarch, then ADR-0016 | Build day 4 |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
 | O-11 | Hat C's delta 2 over `02` to `05` (ADR-0035) | Hat C | After `05` |
-| O-12 | SR-01 to SR-18 and SEC-01 are resolved in ADR-0020 to 0030. Hat C's delta 1 verifies each resolution. | Hat C | Delta 1 |
+| O-12 | Delta 1 verified every resolution. Five are decided in ADRs but not yet visible in a document: SR-04, SR-06, SR-15, SR-18 and SEC-01. They are checked in `02` to `04` (delta 2) and `10`. SR-10 stays open until build-if-time item 4, or DF-20 at the pilot gate. | Hat C | Delta 2 |
 | O-14 | SEC-01: the database grants, table by table, in `02-DATA-MODEL.md` (ADR-0027) | Hat A | `02` |
 | O-17 | **Confirm Phase 2's metric set.** ADR-0032 proposes SM-17 (retrieval quality), SM-19 (dispute agreement), SM-20 (dispute evidence recall), and SM-18 (citation faithfulness) for dispute findings only. The owner's instruction named "SM-16, SM-17 and SM-19". In the numbering used before DOC-01 those are retrieval quality, citation faithfulness and evidence recall. In the current numbering they are document classification, retrieval quality and dispute agreement. Hat A asked on 2026-09-12, and the answer was lost to a tool error. So ADR-0032's set is a proposal, not a recorded owner decision. | Monarch | Phase 2 start |
 | O-18 | Phase 2's paragraph in `09-BUILD-PLAN.md`: a named follow-on of 8 days with a hard stop, not an open backlog (ADR-0032) | Hat B | Step 5c |
+| O-19 | Resolve delta-1 findings DLT-01 to DLT-06 (`reviews/SEC-REVIEW-ARCH.md`). **DLT-02 (High) must be resolved before `03` is written.** DLT-03 lands in `02` and `03`, DLT-04 in an ADR-0032 amendment, DLT-01 and DLT-05 in `10` and `11`, DLT-06 in the next revision of `01` and the PRD. | The owner decides, then Hat A | `03` |
 
 ## Traps: easy to get wrong
 
@@ -73,6 +74,7 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 - **Never `git add -A` in `~/chukta`.** macOS drops `.DS_Store` files, and the repo has no `.gitignore`, because the brief allows only `docs/` and `README.md`. Add paths explicitly.
 - **No Claude attribution on any commit or PR, in any project.** This is the owner's standing rule. Claude Code's global `attribution` setting in `~/.claude/settings.json` is set to empty strings. Check new commit messages before every push.
 - **`set -e` does not stop a gate script here.** A failing python check did not halt a lint-then-commit script on 2026-09-11. Every check gets its own `|| exit 1`.
+- **zsh does not word-split `$VAR`.** A check written as `grep ... $FILES`, with several paths in one variable, greps one nonexistent file and reports a false pass. List the paths or loop over them. This hid the dash check on `f9ca1c2` until delta 1 re-ran it.
 - **`BRIEF.md` is verbatim and frozen.** Corrections go in ADRs and PRD Appendix C, never into the brief.
 - **"Three-way match" is the buyer's PO/GRN/invoice check.** Our matching is "ledger reconciliation".
 - **The 43B(h) rule is a year-end deferral, not a loss.** Never write "lost" (PRD §5.8).
@@ -126,7 +128,7 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
 | Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Frozen. §9.2 lists DF-01 to DF-16. |
-| Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings plus SEC-01, and the delta passes. [`reviews/IMPL-FEASIBILITY-REVIEW.md`](reviews/IMPL-FEASIBILITY-REVIEW.md): what fits in 28 days, the cuts, the build order. | Both approved. Delta 1 in progress. |
+| Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings plus SEC-01, and the delta passes. [`reviews/IMPL-FEASIBILITY-REVIEW.md`](reviews/IMPL-FEASIBILITY-REVIEW.md): what fits in 28 days, the cuts, the build order. | Both approved. Delta 1 done 2026-09-12. |
 | Full index | `INDEX.md` | Final step |
 
 ---
@@ -134,6 +136,19 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-12 · Hat C delta 1 over step 4. STOP.
+- Reviewed ADR-0020 to 0035 (`a213c8b`) and the revised documents (`f9ca1c2`). Each finding was checked against its ADR **and** the document text a builder reads.
+- **Every finding is resolved or explicitly scheduled:** 7 closed, 4 closed for v1 with a scheduled residual, 1 accepted (SR-17), 1 open pending a build-if-time item (SR-10), 5 to verify in documents not yet written (SR-04, SR-06, SR-15, SR-18, SEC-01), and 1 partly closed (SR-05).
+- **6 new findings, recorded in the review:**
+  - **DLT-02 (High):** ADR-0021 and ADR-0029 contradict each other. Approved seller free text may enter drafting prompts, but v1's redaction is slot-level only, so a name in that text can reach the hosted model. Must be resolved before `03`.
+  - **DLT-03 (Medium):** a checkpoint read with the tenant setting missing returns zero rows, which LangGraph treats as a new thread, so a case silently restarts.
+  - **DLT-01 (Medium):** v1 without MFA still publishes the login beyond loopback.
+  - **DLT-04 (Medium):** Phase 2 names no security suites, and has no slack to add them.
+  - **DLT-05 (Low):** formula injection in generated spreadsheets.
+  - **DLT-06 (Low):** stale MCP and trace-link text in `01` and the PRD.
+- **Correction, logged here:** the dash check run before `f9ca1c2` never read the files, because zsh does not word-split `$VAR`. It was re-run file by file during delta 1: 43 files read, and the only dashes are in the verbatim `BRIEF.md`, so `f9ca1c2` was clean.
+- 🛑 STOP. Waiting for the owner's review of step 4 and delta 1.
 
 ### 2026-09-12 · Step 4: Hat A's revision applied
 - The owner approved the feasibility review on 2026-09-11, including its §3 disagreement (seven safety invariants, not four), and decided OD-1 to OD-3. OD-1 came with a correction: RAG and the dispute agent return in a bounded 8-day Phase 2 after v1.
@@ -357,3 +372,5 @@ The reasons are in the feasibility review §5.4.
 - **Check each control against the configuration other documents give the same component.** `06` required a runtime role that owns nothing, while `01` had the same Console run migrations (SEC-01).
 - **Add up the scope against the calendar at every checkpoint, not once at the end.** The doc set grew to three times the build window before anyone totalled it (feasibility review §2).
 - **Never record a decision as the owner's unless the owner's words are in the record.** A lost tool result left two ADRs crediting the owner with a metric choice that nobody can now show (O-17).
+- **A check that cannot fail is not a check.** The step-4 dash check reported PASS without reading a single file. After a lint run, confirm it actually read the files it names, for example by printing a count.
+- **Decisions written in the same pass can contradict each other.** ADR-0021 and ADR-0029 were written minutes apart and disagree about hosted drafting inputs (DLT-02). A delta review has to cross-read them.

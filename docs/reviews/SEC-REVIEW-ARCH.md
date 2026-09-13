@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Hat C's findings against Hat A's documents. Each finding has a severity, an attack or failure scenario, and a concrete mitigation. Hat A resolves them at step 4. |
 | **Intended reader** | Hat A for the step 4 revision, Hat B for feasibility and tests, and the owner |
-| **Status** | Approved by the owner 2026-09-11, with SR-01 to SR-04 confirmed genuine. Findings stay Open until step 4. |
+| **Status** | Approved by the owner 2026-09-11, with SR-01 to SR-04 confirmed genuine. Delta 1 run 2026-09-12 (below). |
 | **Author hat** | Hat C, Security and Compliance Engineer |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-12 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, and ADR-0001 to ADR-0019 at `75cc43c`. `02` to `05` are not written yet (PROJECT_CONTEXT O-11). |
 | **Method** | The threat model in [`06-SECURITY-THREAT-MODEL.md`](../06-SECURITY-THREAT-MODEL.md), using its severity scale. T-nn, S-nn and ST-nn IDs refer to `06`. DC-n classes refer to [`12-DATA-CLASSIFICATION.md`](../12-DATA-CLASSIFICATION.md). |
 
@@ -155,6 +155,51 @@
 
 ## Delta reviews
 
-**Delta 1: after Hat A's step 4 revision (ADR-0018).** *Not yet run.* It will check each SR resolution against this document and `06`.
+### Delta 1: Hat A's step 4 revision (2026-09-12)
 
-**Delta 2: `02` to `05` (PROJECT_CONTEXT O-11).** *Not yet run.* These were written after this review, because the owner moved Hat C ahead of them.
+| | |
+|---|---|
+| **Reviewed** | ADR-0020 to 0035 at `a213c8b`, and the revised PRD, `01`, `06` and feasibility review at `f9ca1c2` |
+| **Method** | Each finding was checked twice: against its resolving ADR, and against the revised document text a builder would actually read. Then the step-4 changes were probed for new problems, including contradictions between ADRs written in the same pass. That is the check SEC-01 showed this review had skipped. |
+| **Verdict** | Step 4 resolves every finding or schedules it explicitly. **No new Critical finding.** One new High (DLT-02): two step-4 ADRs disagree about what a hosted drafting prompt may contain. It must be resolved before `03` fixes the node input contracts. |
+
+#### Resolution of SR-01 to SR-18 and SEC-01
+
+| Finding | Resolved by | Evidence in the documents | Verdict |
+|---|---|---|---|
+| SR-01 | ADR-0024 | PRD §7.1 A2 lists the new token classes. `06` G3 scans for them. | **Closed** |
+| SR-02 | ADR-0025 | PRD FR-PAY-1 requires Razorpay's notifications and reminders off, with no buyer contact details | **Closed.** The loop is build-if-time, and its controls ship with it or not at all. |
+| SR-03 | ADR-0026 | PRD FR-INT-3 forbids raw text and unapproved draft bodies. MCP is not built in v1. | **Closed** |
+| SR-04 | ADR-0027 | `01` §7 names `tenant:case` threads. PRD NFR-02 covers checkpoints. | **Resolved, to verify in `02`** (delta 2). See DLT-03. |
+| SR-05 | ADR-0021 | PRD NFR-03 and `01` §5.4 and §8 require a blocking pre-send scan and fail closed | **Partly closed.** DLT-02 finds a gap in the v1 claim. |
+| SR-06 | ADR-0029 | No document yet. Node input contracts belong in `03`, retrieval profiles in `04`. | **Decided, to verify in `03` and `04`** (delta 2) |
+| SR-07 | ADR-0029 | PRD FR-ING-6. Malware scanning is DF-02 in `12` §9.2. | **Closed for v1.** The residual is Required before the pilot. |
+| SR-08 | ADR-0025 | PRD FR-PAY-2 finds the payment by our own link ID and cross-checks it | **Closed** |
+| SR-09 | ADR-0028 | `01` §9 names the seeding CLI as the recovery path | **Closed for v1.** Full recovery arrives with DF-01. See DLT-01. |
+| SR-10 | ADR-0023 | `01` §9 marks the hash chain and anchor as build-if-time item 4 | **Open** until item 4 is built, or DF-20 at the pilot gate |
+| SR-11 | ADR-0029 | v1 imports no WhatsApp exports or PDF statements. Minimisation tooling is DF-03. | **Closed for v1.** The residual is Required before real imports. |
+| SR-12 | ADR-0025 | PRD §7.1 A8 | **Closed.** The screenshot residual is accepted. |
+| SR-13 | ADR-0020, ADR-0025 | `01` §10.1: the tunnel exists only with Razorpay, and routes only webhook paths | **Closed** |
+| SR-14 | ADR-0030 | A schema check constraint holds `synthetic = true` | **Closed for v1.** Detection is build-if-time item 5, otherwise SK-06. |
+| SR-15 | ADR-0029 | `12` §2 already labels user-typed text untrusted. Its use in prompts is fixed in `03`. | **Decided, to verify in `03`** (delta 2) |
+| SR-16 | ADR-0021 | `01` §5.4 traces the pseudonymised payload | **Closed** |
+| SR-17 | ADR-0020 | The CI assertion is named in ADR-0020 | **Accepted,** with the assertion to be placed in `11` |
+| SR-18 | ADR-0020 | NTP and log retention are named for the production target | **Decided, to verify in `10`** |
+| SEC-01 | ADR-0027 | `01` §4 adds the migrate job. `01` §7 names both roles and which component uses which. | **Resolved.** The table-by-table grants are verified in `02` (delta 2). |
+
+**Tally:** 7 closed, 4 closed for v1 with a scheduled residual, 1 accepted, 1 open pending a build-if-time item, 5 to verify in documents not yet written, and 1 partly closed.
+
+#### New findings from delta 1
+
+| ID | Severity | Where | Finding and scenario | Mitigation | Lands in |
+|---|---|---|---|---|---|
+| DLT-01 | Medium | ADR-0028, `01` §10.1 | ADR-0028 accepts no MFA in v1 because v1 is "one machine". But nothing binds nginx's published port to loopback. On shared Wi-Fi, any device on the network reaches a password-only login. The seeded demo users also invite fixed passwords committed in seed code. | Publish nginx on `127.0.0.1` only, and point the tunnel at loopback. The seeding CLI generates random passwords, shows them once and never writes them to the repo. ST-09 asserts the loopback binding, and ST-13 checks seed files for password literals. | `10`, `11` |
+| DLT-02 | **High** | ADR-0021 versus ADR-0029 | ADR-0021 says v1's hosted calls are drafting prompts built from slots, so slot-level pseudonymisation is complete without the name-finding pass. ADR-0029 lets drafting prompts include **seller-authored text that has already been approved**. That is free text. A prior approved message such as "as discussed with Suresh ji on his mobile" contains a person's name that is in no slot. It reaches the hosted model, and the pre-send scan, which catches patterns and known contacts, can miss a name it has never seen. v1 exposure is nil because the data is synthetic, but the design as written fails its own claim at the pilot. | Until DF-14's name-finding pass exists, hosted drafting prompts receive typed facts and templates only. Approved seller text may feed drafting on the local SLM, never a hosted call. Amend ADR-0021 or ADR-0029 with one sentence, and add an ST-05 case: an approved message holding an unslotted name never appears in a hosted payload. | ADR amendment, then `03` |
+| DLT-03 | Medium | ADR-0027 | RLS on the checkpoint tables fails closed by returning zero rows. LangGraph manages its own connections, so if the tenant setting is missing on a checkpoint read, the library sees "no checkpoint" and starts the thread fresh. The case silently restarts: interrupts and approval context are lost, and drafts can be produced twice. Failing closed as empty is indistinguishable from a new case. | Checkpointer calls run inside the data-access wrapper's transaction, with the tenant set. The wrapper treats "no checkpoint" for a case whose record shows earlier runs as an error that moves the case to NeedsHuman, not as a fresh start. ST-03 adds a case with the setting absent. | `02`, `03` |
+| DLT-04 | Medium | ADR-0032 | Phase 2 puts retrieved untrusted spans into frontier prompts, and adds a new retrieval API. ADR-0032 names no security suites, and its 8 days have no slack, so the suites would be the first thing cut. | Amend ADR-0032: before the first dispute run, ST-03 covers the retrieval API, and ST-01's stored-injection cases run against the dispute agent on a real model. If they do not fit in 8 days, the dispute agent runs on the local SLM only and hosted dispute calls wait. The suites are not cut. | ADR-0032 amendment, `05`, `09` |
+| DLT-05 | Low | ADR-0029, generated files | Any CSV or XLSX Chukta generates from counterparty data can carry a narration that starts with `=`, `+`, `-` or `@`. When the owner opens the file, the spreadsheet runs it as a formula. | Escape such leading characters in every generated spreadsheet cell. Add a case to the ST-10 smoke test. | `07`, `11` |
+| DLT-06 | Low | `01` §3, PRD §7.3 | Stale v1 text. The `01` §3 diagram still draws MCP clients and an MCP endpoint, which are deferred (ADR-0026). PRD §7.3 promises the approver a trace link, but tracing is build-if-time (ADR-0030). A builder reading either would build the wrong thing. | Label MCP as not in v1 in the diagram. Change §7.3 to "a trace link, once tracing is built". | Next revision of `01` and the PRD |
+
+### Delta 2: `02` to `05` (ADR-0035)
+
+*Not yet run.* It verifies SR-04, SR-06, SR-15 and SEC-01 in `02` to `04`, and DLT-02 and DLT-03 where they land.
