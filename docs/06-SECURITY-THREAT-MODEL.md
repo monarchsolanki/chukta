@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Identifies what can go wrong in Chukta, who would cause it, and the controls that stop it. Covers every threat the brief requires, and records the security decisions that answer the architecture's open questions. |
 | **Intended reader** | The developer building v1, Hat A (revising at step 4), Hat B (planning tests in `11`), and whoever approves a pilot. |
-| **Status** | Frozen for step 3 review. Approved by the owner 2026-09-11. Later changes go through an ADR. |
+| **Status** | Revised at step 4 (2026-09-12): decisions promoted to ADRs, and v1 statuses added (§4.1, §5.1, §6). The revision history is §7. Frozen for the Hat C delta pass. Later changes go through an ADR. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-12 |
 | **Reviews** | [`00-PRD.md`](00-PRD.md), [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) and [ADR-0001 to ADR-0019](adr/). `02` to `05` do not exist yet. They get a delta pass later (PROJECT_CONTEXT O-11). |
 | **Companions** | `12-DATA-CLASSIFICATION.md` defines data classes DC-0 to DC-5. `reviews/SEC-REVIEW-ARCH.md` holds the findings against Hat A's documents. |
 
@@ -363,7 +363,7 @@ The brief asks whether any code path can send an outbound message without human 
 
 ## 4. Security decisions
 
-These answer `01`'s open questions and close the gaps found in review. Like `01`'s D-decisions, they are promoted to ADRs at step 4. Until then, this table is their only record.
+These answer `01`'s open questions and close the gaps found in review. **They were promoted to ADRs at step 4 (2026-09-12).** §4.1 says where each one landed and what v1 builds of it. The ADRs are the record from now on.
 
 | ID | Decision | Answers | Why |
 |---|---|---|---|
@@ -381,6 +381,25 @@ These answer `01`'s open questions and close the gaps found in review. Like `01`
 | S-12 | **Dev tunnel:** it routes only webhook paths, through an nginx location allowlist, and runs only during the payment test. It never exposes the Console UI. | SR-13 | T-21 |
 | S-13 | **Pending drafts:** a watermark, copy and export disabled, send links only after approval, and every view audited | SR-12 | Narrows P-9. The rest is accepted. |
 | S-14 | **Region. This decides `01` A-Q7:** ap-south-1 for the production target (`12` §7) | A-Q7 | Keeps primary data in India, which simplifies keeping logs within Indian jurisdiction [VERIFY V39] |
+
+### 4.1 Where each decision landed, and its v1 status
+
+| ID | ADR | v1 status |
+|---|---|---|
+| S-01 | ADR-0026 | Not built. MCP is deferred (DF-12), so option (c) applies until it is. The constraints bind when it is built. |
+| S-02 | ADR-0028 | Shrunk to passwords, server sessions, RBAC and a seeding CLI. MFA, step-up and recovery codes are DF-01, required before the pilot. |
+| S-03 | ADR-0020 | Built: Compose networks, tested by ST-09 |
+| S-04 | ADR-0024 | Built |
+| S-05 | ADR-0021 | Built at slot level. The name-finding pass waits for DF-14. |
+| S-06 | ADR-0025 | Built only if the Razorpay loop is built (build-if-time item 2) |
+| S-07 | ADR-0027 | Built |
+| S-08 | ADR-0029 | The cheap controls are built. Malware scanning and the full ST-10 are DF-02, required before the pilot. |
+| S-09 | ADR-0029 | Built |
+| S-10 | ADR-0023 | Build-if-time item 4. If not built, it becomes DF-20, required before the pilot. |
+| S-11 | ADR-0030 | The schema constraint is built. Detection at ingestion is build-if-time item 5, otherwise SK-06. |
+| S-12 | ADR-0020, ADR-0025 | Built only with the Razorpay loop |
+| S-13 | ADR-0025 | Built |
+| S-14 | ADR-0020 | Applies to the production target only |
 
 ---
 
@@ -406,6 +425,17 @@ Hat B places these in `11-TEST-STRATEGY.md`. "Every push" means CI. "Manual" mea
 | ST-14 | Real-data gate: creating a non-synthetic tenant fails, and real-looking identifiers are flagged and cannot be accepted | T-24 | Every push |
 | ST-15 | Minimisation: WhatsApp window filtering, bank-line filtering, raw files deleted on schedule | T-18 | Every push |
 
+### 5.1 v1 ranking (feasibility review §3, approved 2026-09-11)
+
+| Tier | Suites |
+|---|---|
+| Must build in v1 | ST-01 (stub-model half), ST-03, ST-04 (with ST-02's deterministic cases), ST-05 (slot level), ST-06 (without its MCP cases), ST-07 (role matrix), ST-09, ST-11, ST-13 |
+| Ships with the Razorpay loop, or not at all | ST-08 |
+| Build-if-time | ST-01 and ST-02 real-model cases and an ST-10 smoke test (item 7), ST-12 (item 4), ST-14 (item 5) |
+| Deferred to the pilot gate | The full ST-10 (DF-02), ST-15 (DF-03), ST-07's MFA and step-up cases (DF-01), ST-06's MCP cases (DF-12) |
+
+The owner ranked ST-03, ST-04, ST-06 and ST-11 as non-negotiable, because they verify the project's four claims. The feasibility review added ST-01, ST-05 and ST-07, because the PRD states seven safety invariants, and the owner accepted that.
+
 ---
 
 ## 6. Residual risks accepted for v1
@@ -417,9 +447,20 @@ Hat B places these in `11-TEST-STRATEGY.md`. "Every push" means CI. "Manual" mea
 | The model misclassifies a low-impact intent (T-01) | Code validation and the review queue bound it | Eval results on the H set (SM-13) |
 | Supply-chain compromise (T-19) | Pinning and scanning reduce the risk, but cannot remove it | An SBOM review and a penetration test at the pilot gate |
 | Account takeover despite MFA (T-10) | Phishing-resistant keys are not in v1 | Passkeys before real data, if the pilot's risk review asks |
+| Account takeover in v1, where there is no MFA at all (T-10, ADR-0028) | v1 holds synthetic data on one machine, and the real-data gate is a schema constraint (ADR-0030) | DF-01, required before any real data |
 | nginx on a routable network (SR-17) | Docker needs it there to publish a port | Nothing. It holds no secrets and cannot reach the data network. |
 
 Everything else in §2 is Low residual, or is closed by a test that runs on every push.
+
+---
+
+## 7. Revision history
+
+| Date | Change | Why |
+|---|---|---|
+| 2026-09-11 | First version | Hat C, step 2 |
+| 2026-09-11 | Approved by the owner, and frozen for step 3 review | Owner's review |
+| 2026-09-12 | §4 decisions promoted to ADR-0020 to 0030. §4.1 and §5.1 added, and a §6 row for v1 without MFA. | Step 4 (ADR-0031) |
 
 ---
 

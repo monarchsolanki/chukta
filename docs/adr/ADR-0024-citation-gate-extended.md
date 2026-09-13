@@ -21,7 +21,7 @@ ADR-0010's regulated tokens covered amounts, dates, day counts, percentages, doc
 - **An echo check** blocks any outbound draft that reproduces a span of untrusted content longer than a configured length.
 - **The approval screen** shows payment details as a separate, highlighted block.
 - **Statutory artifacts are template-only,** with no model-written prose (SK-02). So G6, the entailment check on statutory prose, is skipped (SK-01). It comes back only through an ADR that allows model prose in statutory artifacts.
-- **SM-18 no longer applies to statutory artifacts.** It returns in Phase 2, scoped to dispute findings, because their cited spans are chosen by a model (ADR-0032, at the owner's direction on 2026-09-12). SK-01's reasoning, that there is no model prose to check, holds for templates but not for dispute findings.
+- **SM-18 no longer applies to statutory artifacts.** It returns in Phase 2, scoped to dispute findings, because their cited spans are chosen by a model (ADR-0032, proposed at step 4 and pending the owner's confirmation under PROJECT_CONTEXT O-17). SK-01's reasoning, that there is no model prose to check, holds for templates but not for dispute findings.
 
 ## Alternatives rejected
 

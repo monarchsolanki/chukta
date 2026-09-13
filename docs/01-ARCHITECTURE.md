@@ -4,16 +4,16 @@
 |---|---|
 | **Purpose** | Defines the components, boundaries, runtime behaviour and deployment of Chukta v1, and shows how each PRD requirement is met. |
 | **Intended reader** | The developer building v1, and the Hat B and Hat C reviewers. Read the PRD first. |
-| **Status** | Frozen for step 2 review. Approved 2026-09-11, with the owner's findings F-01 to F-05 applied (§17). Later changes go through an ADR. |
+| **Status** | Revised at step 4 (2026-09-12) through ADR-0020 to ADR-0031. The revision history is §17. Frozen for the Hat C delta pass. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-12 |
 | **Depends on** | [`00-PRD.md`](00-PRD.md) (Frozen for step 2 review) and [ADR-0001 to ADR-0019](adr/) |
 
 ### Conventions
 
 - Requirement IDs (FR, NFR, SM) and `[VERIFY Vnn]` tags refer to the PRD. This document makes no new statutory claims.
 - Numbers here are configuration defaults, not targets, unless labelled **[System]**.
-- Decisions made first in this document are numbered D-01 onward and listed in §15 with their reasoning. They are promoted to ADRs when Hat A's set closes. Until then §15 is their only record, so it must not be cut.
+- Decisions made first in this document are numbered D-01 onward and listed in §15 with their reasoning. They were promoted to ADRs at step 4, and §15 says where. §15 is kept as history.
 - **Out of scope here:** table-level schema (`02`), graph and node internals (`03`), retrieval internals (`04`), evaluation (`05`), threat analysis (`06`), and API payloads and adapter contracts (`07`).
 
 ---
@@ -72,7 +72,7 @@ flowchart LR
 
 - **No arrow runs from Chukta to the buyer.** The only path to a buyer is a person (P2, ADR-0011).
 - WhatsApp content arrives as chat exports and pastes, uploaded by a user. Chukta has no WhatsApp integration.
-- **Data leaves our infrastructure by four routes:** pseudonymised prompts, masked traces, payment-link requests, and whatever an MCP tool returns to the user's own MCP client. The first three pass through the model gateway or the egress proxy. **The fourth does not, and as written it contradicts P9.** An MCP client is usually an LLM app pointed at a hosted model we do not control, so raw content returned by an MCP tool would leave our infrastructure without pseudonymisation or trace masking. This is open question A-Q8, which carries a recommendation. Hat C decides it in `06`.
+- **Data leaves our infrastructure by four routes:** pseudonymised prompts, masked traces, payment-link requests, and whatever an MCP tool returns to the user's own MCP client. The first three pass through the model gateway or the egress proxy. **The fourth does not, and as written it contradicts P9.** An MCP client is usually an LLM app pointed at a hosted model we do not control, so raw content returned by an MCP tool would leave our infrastructure without pseudonymisation or trace masking. A-Q8 is now closed: MCP is deferred from v1, and when it is built it returns only pseudonymised structured records (ADR-0026).
 
 ---
 
@@ -152,8 +152,9 @@ The "must never" column matters as much as the responsibilities. Each entry is e
 | Component | Runtime | Responsible for | Must never |
 |---|---|---|---|
 | Nginx | Container | TLS, rate limits per route and per client, request size limits, routing to the Console, including its MCP endpoint | Expose FastAPI, Redis, Postgres or Ollama |
-| Console | Next.js 15, Node | UI, BFF API, sessions and MFA, RBAC and active-tenant checks, approval and review-queue screens, webhook receivers (verify, persist, acknowledge), Prisma migrations as sole owner | Call a model or any external API. Process a webhook payload inline. Depend on a messaging SDK. |
-| MCP endpoint | A route inside the Console (D-02) | Read and draft tools for a user's MCP client. Authenticated by an access token scoped to one tenant with read and draft rights, and checked by the same RBAC layer as the UI. What it may return is open under A-Q8. | Expose an approve, send or waive tool (FR-INT-3). Act outside its token's tenant. |
+| Console | Next.js 15, Node | UI, BFF API, sessions (MFA waits for the pilot gate, ADR-0028), RBAC and active-tenant checks, approval and review-queue screens, webhook receivers (verify, persist, acknowledge), owner of the Prisma schema definition. It connects as the runtime database role and never runs migrations (ADR-0027). | Call a model or any external API. Process a webhook payload inline. Depend on a messaging SDK. |
+| Migrate job | One-shot Compose service | Runs Prisma migrations and the LangGraph checkpointer setup as the migration role, then exits (ADR-0027) | Stay running, or share its database credentials with any other service |
+| MCP endpoint | A route inside the Console (D-02) | Read and draft tools for a user's MCP client. Authenticated by an access token scoped to one tenant with read and draft rights, and checked by the same RBAC layer as the UI. Deferred from v1 (DF-12). When built, it follows ADR-0026. | Expose an approve, send or waive tool (FR-INT-3). Act outside its token's tenant. |
 | Agent API | FastAPI, Python | Internal endpoints: submit work, read agent outputs, resume a graph after approval. Verifies the Console's signed internal token. | Accept traffic from outside the private network |
 | Workers | Celery, Python | Three queues. `ingest`: OCR, layout inference, classification. `model`: model-bound tasks. `graph`: case runs, drafting, gate, rendering, payment links. | Send a message. There is no client to send with. |
 | Scheduler | Python | `wake_at` sweep, outbox relay, review-queue ageing and escalation (FR-HQ-5), daily spend-cap reset | Run business logic. It only enqueues. |
@@ -285,18 +286,19 @@ sequenceDiagram
       S-->>G: Output
     else Hosted tier
       G->>G: Pseudonymise personal identifiers
+      G->>G: Blocking pre-send scan. Refuse if any stage is down.
       G->>F: Prompt
       F-->>G: Output
       G->>G: Re-identify inside our infrastructure
     end
     G->>G: Validate output against the task schema
     G->>P: Spend ledger row with tokens, cost and tier
-    G->>T: Masked trace
+    G->>T: Trace built from the pseudonymised payload
     G-->>N: Output, or a schema failure that routes to review
   end
 ```
 
-Every control that P8 promises lives in this one sequence: budget, routing, redaction, validation, cost and trace.
+Every control that P8 promises lives in this one sequence: budget, routing, redaction, validation, cost and trace. Redaction fails closed, and traces never carry the re-identified reply (ADR-0021). In v1, only drafting prompts take the hosted branch.
 
 Ledger uploads follow PRD §5.2. They run on the `ingest` queue for parsing, then the matcher and the gate run in a case run as in §5.2 above.
 
@@ -350,6 +352,7 @@ Table-level design is in `02-DATA-MODEL.md`. This section fixes where each kind 
 | Redis | Celery messages | Outbox relay, Agent API | Workers | Nothing durable. Anything lost is republished from the outbox (P3). |
 
 - In v1 the object store is MinIO and Postgres runs from a pgvector image, both in Compose (§10.1). The production target uses S3 and RDS.
+- **Two database roles (ADR-0027).** The migration role owns both schemas and is used only by the one-shot `migrate` job. The Console, Agent API, workers and scheduler connect as the runtime role, which owns nothing, has no `BYPASSRLS`, and has INSERT only on the audit table. Checkpoint threads are named `tenant:case`, and the prefix is checked on every read and write. `02` gives the grants table by table.
 - The **pseudonym map** never leaves Postgres. It is never sent to a hosted model and never written to a trace.
 - Retention and deletion periods are set by Hat C in `12-DATA-CLASSIFICATION.md`.
 
@@ -379,6 +382,8 @@ The gateway reads this table from configuration. Per-task changes follow eval re
   4. The SM-05 scanner checks every logged hosted payload for leftovers.
 - **Low confidence falls back to the review queue, not to the frontier model** (D-09). A tenant can switch one task to frontier fallback after evals justify it.
 - **Budgets.** Each task has a token budget. Budgets add up into the per-case caps that the breaker enforces (NFR-14).
+- **Fail closed (ADR-0021).** A blocking pre-send scan runs on every hosted payload. If any redaction stage is unavailable, the hosted call is refused.
+- **v1 status (ADR-0021, ADR-0031, ADR-0032).** In v1 the only hosted calls are drafting prompts built from slots. The frontier rows for narration residuals and dispute investigation stay inactive until DF-14's name-finding pass exists, and dispute investigation arrives in Phase 2. Scan classification waits for OCR (DF-06).
 
 ---
 
@@ -388,7 +393,7 @@ Hat C designs the threat model in `06`. This table fixes where each control live
 
 | Concern | Mechanism in this architecture | Detailed in |
 |---|---|---|
-| Authentication | Auth.js database sessions in the Console. MFA for every role that can approve. | `06` |
+| Authentication | v1: passwords with Argon2id, server-side sessions, RBAC, and a seeding CLI that creates and resets users. MFA, step-up and recovery codes wait for the pilot gate (DF-01). | ADR-0028 |
 | Authorisation | The PRD §7.2 matrix is checked in the BFF on every action. The active tenant is pinned in the session. | `06` |
 | Service to service | The Console signs a short-lived internal token (tenant, user, role, purpose) for the Agent API. MCP clients present an access token scoped to one tenant with read and draft rights, and the Console checks it like any UI request. | `06`, `07` |
 | Tenant isolation | Bound tenant in retrieval and tools. RLS with `SET LOCAL`. The app's database role lacks `BYPASSRLS`, and tables use `FORCE ROW LEVEL SECURITY`. | ADR-0012, `02` |
@@ -396,7 +401,7 @@ Hat C designs the threat model in `06`. This table fixes where each control live
 | Webhooks | Signature verification, timestamp window, event-ID dedupe, persist then acknowledge | `07` |
 | Egress | Only Z3 has egress, through a domain-allowlisted proxy. The Console has none. | D-03 |
 | Secrets | v1: a local env file that is never committed. Production target: AWS Secrets Manager, read at container start. Never in images or the repo. | `06` |
-| Audit | Append-only. The app role has INSERT only on the audit table. Each row carries the hash of the previous row. | D-08, `02` |
+| Audit | Append-only. The runtime role has INSERT only on the audit table. The hash chain and its daily anchor outside the database are build-if-time item 4. | ADR-0023, `02` |
 | Approval gate | No send path. Approvals bind to a content hash. Payment links are created only after approval. | ADR-0011, PRD §7.1 |
 
 ---
@@ -413,7 +418,7 @@ flowchart LR
     OLL["Ollama, native<br/>on the machine's GPU"]
     NGX["nginx<br/>networks: edge, app"]
     CON["console<br/>networks: app, data"]
-    DAT["agent-api, scheduler, postgres,<br/>redis, minio, prometheus<br/>network: data"]
+    DAT["agent-api, scheduler, migrate job,<br/>postgres, redis, minio<br/>network: data"]
     WRK["workers<br/>networks: data, compute"]
     PXY["egress proxy<br/>networks: compute, egress"]
   end
@@ -430,7 +435,7 @@ flowchart LR
 |---|---|---|---|
 | `edge` | Normal bridge | nginx | Yes. Docker can publish a port only from a network that has a route out. |
 | `app` | `internal: true` | nginx, console | None |
-| `data` | `internal: true` | console, agent-api, workers, scheduler, postgres, redis, minio, prometheus | None |
+| `data` | `internal: true` | console, agent-api, workers, scheduler, the one-shot migrate job, postgres, redis, minio | None |
 | `compute` | `internal: true` | workers, egress proxy | None |
 | `egress` | Normal bridge | egress proxy | Yes: allowlisted domains on port 443, and the host's Ollama port |
 
@@ -457,7 +462,7 @@ Before this change, the property could be checked only in a deployed environment
 
 - **Ollama runs natively.** Docker on macOS cannot use the Mac's GPU, and a model of about 27B is too slow on CPU. Workers reach Ollama through the proxy, whose allowlist includes the host's Ollama port. CI uses stub models instead. The configured model must fit the developer's machine (A-Q5, O-06 in `PROJECT_CONTEXT.md`).
 - **Object storage is MinIO,** and Postgres runs from a pgvector image. Secrets come from a local env file that is never committed.
-- **Webhooks:** routine tests and CI replay recorded fixtures, re-signed with a test secret. The live Razorpay test-mode loop reaches the machine through a tunnel to nginx's published port, started only for that test. The tunnel is a temporary public surface, and `06` covers it. Inbound mail uses fixture replay until A-Q1 is answered.
+- **Webhooks:** routine tests and CI replay recorded fixtures, re-signed with a test secret. The live Razorpay test-mode loop reaches the machine through a tunnel to nginx's published port, started only for that test. The tunnel is a temporary public surface. It exists only if the Razorpay loop is built (build-if-time item 2), and it routes only webhook paths (ADR-0020, ADR-0025). Inbound mail uses fixture replay until A-Q1 is answered.
 - **Images are built from source** on the machine that runs them (D-06, revised).
 - **Backups:** Postgres dumps and the MinIO data directory, covered by the machine's own backup. A restore drill is part of `11`.
 
@@ -515,6 +520,8 @@ flowchart LR
 
 ## 11. Observability and cost
 
+**v1 status (ADR-0030):** Prometheus metrics and alerts are deferred (DF-05, required before a pilot). In v1, queue ages and breaker trips show as flags in the Console (FR-APR-3, FR-HQ-5), the spend ledger is the source of truth for cost, and Langfuse is build-if-time item 3. The rest of this section is the production-target design.
+
 | Signal (Prometheus) | Emitted by | Why it matters |
 |---|---|---|
 | Request rate, latency and errors per route | Nginx, Console, Agent API | Baseline health |
@@ -552,7 +559,7 @@ flowchart LR
 | NFR-07 Durability | Checkpoints, `wake_at` and outbox in Postgres | Postgres | Kill-and-restart test |
 | NFR-08 Exactly-once effects | Dedupe keys, processed-tasks table, webhook event-ID dedupe | Workers, receivers | SM-06 |
 | NFR-09 Statutory versioning | Effective-dated provisions, rates and method profiles | Postgres | Recompute test |
-| NFR-10 Observability | The gateway traces every call | Gateway | Trace coverage in eval runs |
+| NFR-10 Observability | The gateway traces every call, once tracing is built (build-if-time item 3, ADR-0030) | Gateway | Trace coverage, stated in every eval report |
 | NFR-11 Cost reporting | Spend ledger plus GPU amortisation | Gateway, Prometheus | SM-22 report |
 | NFR-12 Security baseline | Rate limits, RBAC, secrets, webhook verification | Edge, Console | `06` |
 | NFR-13 Latency | Separate `ingest`, `model` and `graph` queues | Workers | SM-23 |
@@ -593,7 +600,7 @@ flowchart LR
 
 ## 15. Decisions made in this document
 
-These are promoted to ADRs when Hat A's set closes. Until then, this table is their only record.
+**Promoted to ADRs at step 4 (2026-09-12).** D-01, D-04 and D-09 are in ADR-0021. D-02, D-03 and D-06 are in ADR-0020. D-05 and D-07 are in ADR-0022. D-08 is in ADR-0023. The ADRs are the record from now on, and this table is kept as history.
 
 | ID | Decision | Why | Alternatives rejected |
 |---|---|---|---|
@@ -622,6 +629,19 @@ These are promoted to ADRs when Hat A's set closes. Until then, this table is th
 | A-Q7 | Region for the production target: ap-south-1 proposed for data locality, to be confirmed by the DPDP analysis | Hat C | `12` |
 | A-Q8 | **MCP contradicts P9.** P9 says raw counterparty content stays on our infrastructure. An MCP client is usually an LLM app pointed at a hosted model we do not control, so anything an MCP tool returns bypasses the gateway, the pseudonymiser and trace masking. As written, P9 and the MCP endpoint cannot both hold. There are three resolutions. **(a)** MCP tools return only pseudonymised content. **(b)** P9 gets a named carve-out for deliberate user export, with an audit event per call. **(c)** MCP is deferred out of v1. **Hat A recommends (a), narrowed:** tools return structured records (IDs, statuses, amounts, dates, document references) with personal identifiers pseudonymised, and no raw message or document text. That keeps P9 whole without a carve-out, keeps the brief's MCP interop, and reuses the pseudonymiser that already exists. If Hat B cuts MCP for time, (c) follows. | Hat C | `06` |
 
+**Status after step 4 (2026-09-12)**
+
+| ID | Status |
+|---|---|
+| A-Q1 | Deferred with live inbound mail (DF-08, ADR-0031). v1 replays mail fixtures. |
+| A-Q2 | Closed: v1 runs on Compose on a developer machine (ADR-0020) |
+| A-Q3 | Closed: Compose networks in v1, host firewall rules in the target, no AWS Network Firewall (ADR-0020) |
+| A-Q4 | Closed: the v1 minimum now, full MFA at the pilot gate (ADR-0028) |
+| A-Q5 | Closed: no GPU host in v1 (F-03, ADR-0031). Whether the local model fits the developer's machine is PROJECT_CONTEXT O-06. |
+| A-Q6 | Deferred with OCR (DF-06, ADR-0031) |
+| A-Q7 | Closed: ap-south-1 for the production target (ADR-0020) |
+| A-Q8 | Closed: MCP is deferred from v1, and option (a)'s constraints are fixed for when it is built (ADR-0026) |
+
 ---
 
 ## 17. Revision history
@@ -635,3 +655,4 @@ These are promoted to ADRs when Hat A's set closes. Until then, this table is th
 | 2026-09-11 | **F-04:** approval-queue depth and age signal, with an alert (§11) | Owner's review |
 | 2026-09-11 | **F-05:** SM renumbering checked across every document. No change was needed in `01`. | Owner's review |
 | 2026-09-11 | Status set to Frozen for step 2 review | Approved by the owner |
+| 2026-09-12 | **Step 4:** D-decisions promoted to ADR-0020 to 0023 (§15). Migrate job and database roles (§4, §7). Fail-closed redaction and pseudonymised traces (§5.4, §8). v1 hosted calls limited to drafting (§8). v1 authentication and audit (§9). Prometheus removed from the v1 stack (§10.1, §11). The tunnel made conditional on Razorpay (§10.1). Open questions closed or deferred (§16). A-Q8 closed (§2, §4). | ADR-0020 to ADR-0031 |

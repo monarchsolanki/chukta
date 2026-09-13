@@ -6,7 +6,7 @@
 | **Intended reader** | The owner, Hat B (who writes the Phase 2 paragraph in `09`), and whoever designs `04` and `05`. |
 | **Doc status** | In Review |
 | **Decision status** | Accepted, 2026-09-12 (step 4) |
-| **Resolves** | The owner's decision OD-1, as corrected on 2026-09-11. The scheduling of DF-09 and DF-11. SM-18's return for dispute findings (the owner's direction, 2026-09-12). |
+| **Resolves** | The owner's decision OD-1, as corrected on 2026-09-11. The scheduling of DF-09 and DF-11. SM-18's return for dispute findings, proposed at step 4 and pending the owner's confirmation (PROJECT_CONTEXT O-17). |
 | **Related** | `12` §9.2; ADR-0021, ADR-0024, ADR-0031; feasibility review §5.2 |
 
 ## Context

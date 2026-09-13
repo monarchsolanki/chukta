@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Defines what Chukta v1 does, who it is for, and how we will know it works. Every other design doc implements this one. |
 | **Intended reader** | The developer building v1, the Hat B and Hat C reviewers, and the owner who verifies statutory claims against primary sources. |
-| **Status** | Frozen for step 2 review. Approved 2026-09-11, with fixes DOC-01, DOC-03, GAP-01 and GAP-02 applied (bug register in `PROJECT_CONTEXT.md`). Later changes go through an ADR. |
+| **Status** | Revised at step 4 (2026-09-12) through ADR-0020 to ADR-0035. The revision history is Appendix D. Frozen for the Hat C delta pass. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-12 |
 | **Source brief** | [`BRIEF.md`](BRIEF.md). Decisions that change the brief are in Appendix C. |
 
 ### Conventions used in this document
@@ -91,7 +91,7 @@ These are working assumptions from the brief. A pilot must confirm them.
 - Counterparty ledgers and bank statements arrive as XLSX, CSV, text PDF or scanned PDF.
 - **Inbound channels:** a per-tenant forwarding email address (signed webhook), manual paste, WhatsApp chat export files, and call notes typed by staff.
 - **Outbound:** Chukta never transmits. Approval produces the final artifact plus a `wa.me` or `mailto` link, and a human sends it (ADR-0011). Approved artifacts can carry a Razorpay test-mode payment link.
-- **Languages:** inbound English, Hinglish (Roman script) and Hindi (Devanagari). Other languages are detected and routed to a human. Notices and BCS go out in English. Conversational drafts use the language of the thread.
+- **Languages:** inbound English, Hinglish (Roman script) and Hindi (Devanagari). Other languages are detected and routed to a human. Notices and BCS go out in English. Conversational drafts use the language of the thread. *v1 (ADR-0031): Devanagari inbound is deferred as DF-13, so Devanagari messages go to the review queue.*
 - v1 runs on synthetic data only (NG4).
 
 ### 3.2 Statutory eligibility: the qualifying subset
@@ -138,6 +138,8 @@ Everything except the statutory levers: evidence packets, reconciliation and BCS
 | G7 | Attach Razorpay test-mode payment links to approved artifacts, and close the loop through verified webhooks. |
 | G8 | Guarantee that no artifact is finalised without human approval, and that no fact or citation appears in an artifact without a bound source. |
 | G9 | Measure all of the above on synthetic and hand-written data, reported per data source. |
+
+*v1 status (ADR-0031, ADR-0032):* G2, G3, G4, G8 and G9 are built in v1. G1 (evidence) and G7 (payments) are build-if-time. G5 (disputes) comes in Phase 2. G6 (cash questions) is deferred (DF-10).
 
 **Non-goals**
 
@@ -297,7 +299,7 @@ sequenceDiagram
   C->>C: Invoice to Paid or PartPaid, case re-plans
 ```
 
-- Creating a link is an API call to Razorpay. It sends nothing to the buyer, and it happens only after approval.
+- Creating a link is an API call to Razorpay. It sends nothing to the buyer, and it happens only after approval. *Step 4 (ADR-0025):* links are created with Razorpay's own notifications and reminders off, and with no buyer contact details, because otherwise Razorpay itself would message the buyer. The whole loop is build-if-time.
 - Approval covers the artifact including a payment-link slot. After the link is filled in, the gate checks only that the link's amount equals the approved amount (§7.1, A6).
 
 ### 5.8 Named behaviour B-1: the year-end lever window
@@ -455,12 +457,13 @@ Model calls concentrate in three places: reading at ingestion, writing prose aro
 | ID | Rule |
 |---|---|
 | A1 | Every outbound artifact enters the approval queue. v1 has no send capability. Approval produces the final artifact, and a human sends it (ADR-0011). |
-| A2 | An artifact that fails the gate never reaches the queue. The gate checks four things. Every amount, date, day count, percentage, document reference and section reference renders from a bound slot (ADR-0010). Every cited provision is verified (ADR-0005). A BCS ties out. A packet matches the request. The drafter receives the failure reason. |
+| A2 | An artifact that fails the gate never reaches the queue. The gate checks four things. Every amount, date, day count, percentage, document reference, section reference, URL, email address, phone number, UPI ID, IFSC code and bank account number renders from a bound slot, and no long span of untrusted content is echoed (ADR-0010, ADR-0024). Every cited provision is verified (ADR-0005). A BCS ties out. A packet matches the request. The drafter receives the failure reason. |
 | A3 | Approval binds to a content hash. Any edit voids the approval and re-runs the gate. Approvers may edit prose freely. To change a slotted fact, they edit the source record and the artifact re-renders. |
 | A4 | "Sent" is a human assertion, recorded with who, when and which channel. v1 cannot verify delivery. |
 | A5 | Approvals, rejections, edits, waivers and sent-marks are append-only audit events. |
 | A6 | Payment links are created only after approval, in Razorpay test mode, for the amount in the balance slot. Filling in the link re-checks that amount and nothing else. |
 | A7 | Statutory artifacts carry a fixed banner: "Computed position for review. Not legal advice." (NG2) |
+| A8 | Pending drafts carry a watermark. Copy and export are disabled, send links appear only after approval, and every view is audited (ADR-0025). |
 
 ### 7.2 Approval matrix
 
@@ -499,6 +502,7 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 | FR-ING-3 | Ingest messages from the forwarding address, manual paste and WhatsApp chat exports | code | Each message is stored once with channel, sender, time and raw content. Duplicates are dropped. |
 | FR-ING-4 | Classify uploaded documents and extract key fields | LLM+code | SM-16. Low confidence goes to the human review queue (FR-HQ). |
 | FR-ING-5 | Treat all ingested content as data. It cannot change instructions, tools, tenant or approval state. | code | SM-04 = 0 |
+| FR-ING-6 | Accept only allowlisted file types. Reject macro-enabled formats. Enforce size limits. Parse with hardened XML handling, never evaluate formulas, and serve downloads as attachments (ADR-0029). | code | The ST-10 smoke cases are rejected safely. Malware scanning waits for DF-02. |
 
 **Cases**
 
@@ -533,7 +537,7 @@ Driver: **code**, **LLM+code** (model proposes, code validates), or **LLM**. Tar
 | FR-STA-2 | Compute the statutory due date from the acceptance date and payment terms | code | SM-07. An unknown acceptance date returns "cannot compute". |
 | FR-STA-3 | Compute s.16 interest with named, versioned parameters and an effective-dated bank-rate table [VERIFY V13: RBI Bank Rate history] | code | SM-07. The output lists every parameter used. |
 | FR-STA-4 | Compute 43B(h) exposure by date under B-1 | code | SM-08. Wording is always "moves to the tax year of payment". |
-| FR-STA-5 | Draft notices from templates with fact and citation slots | LLM+code | SM-01 = 0 |
+| FR-STA-5 | Draft notices from fixed templates with fact and citation slots. Statutory artifacts carry no model-written prose (ADR-0024). | code | SM-01 = 0 |
 | FR-STA-6 | Load statute text with provenance. Unverified provisions cannot be cited. | code | Corpus starts empty. Statutory drafts are blocked until provisions are verified. |
 
 **Conversation, Dispute, Analytics**
@@ -558,21 +562,37 @@ Low-confidence and high-impact model outputs wait here for a person. Much of the
 | FR-HQ-2 | **Who works it.** Items route by type. Acceptance dates, payment terms and dispute flags go to the owner. Ledger mappings, document classifications and UTR checks go to the accountant. Message triage goes to collections staff or the accountant. A read-only CA can comment but not resolve. | code | Role test: each item type can be resolved only by its roles |
 | FR-HQ-3 | **Resolution.** Accept the proposal, correct it, or reject it. Each resolution is an audit event with who, when, and the before and after values. | code | Every resolution appears in the audit log with before and after values |
 | FR-HQ-4 | **Blocking is scoped to dependents.** A pending item blocks only the work that depends on it. A pending acceptance date blocks statutory steps for that invoice, not L0 to L2 reminders. A pending triage item blocks only the state changes its message would cause. Other invoices and steps in the case carry on. | code | No state change derived from an unresolved item ever happens. A case with a pending item still advances its independent invoices. |
-| FR-HQ-5 | **Stale items escalate. Nothing auto-resolves.** Each item type has a configurable age limit. On breach the item escalates to the owner (console flag and daily digest) and keeps blocking its dependents. Nothing is ever accepted by timeout. A human may bulk-close items made obsolete by later events, with a reason. | code | Timeout test: an aged item escalates and its dependents stay blocked |
+| FR-HQ-5 | **Stale items escalate. Nothing auto-resolves.** Each item type has a configurable age limit. On breach the item escalates to the owner through a Console flag, and keeps blocking its dependents. The daily digest is skipped (SK-03). Nothing is ever accepted by timeout. A human may bulk-close items made obsolete by later events, with a reason. | code | Timeout test: an aged item escalates and its dependents stay blocked |
 | FR-HQ-6 | **Visibility and dedupe.** The case view lists pending items and what each one blocks. The owner sees queue depth and oldest age by type. The chase list (FR-ANL-2) marks invoices blocked by an item. One underlying question creates one item, not many. | code | A duplicate trigger yields one item. Blocked invoices are marked in the chase list. |
 
 **Payments, approval, audit, interfaces**
 
 | ID | Requirement | Driver | Acceptance criterion |
 |---|---|---|---|
-| FR-PAY-1 | Create Razorpay test-mode payment links for approved artifacts | code | Link amount equals the balance slot. No link on an unapproved artifact. |
-| FR-PAY-2 | Ingest Razorpay webhooks: verify signature, reject replays, dedupe by event ID, record payment, advance invoice state | code | Tampered, replayed and duplicate events have no effect. A valid test payment moves the invoice to Paid or PartPaid. |
+| FR-PAY-1 | Create Razorpay test-mode payment links for approved artifacts, with Razorpay's notifications and reminders off and no buyer contact details (ADR-0025) | code | Link amount equals the balance slot. No link on an unapproved artifact. The request payload is tested. |
+| FR-PAY-2 | Ingest Razorpay webhooks: verify the signature, reject replays, dedupe by event ID, find the payment by our own link ID, cross-check amount, currency and status, record the payment, advance invoice state (ADR-0025) | code | Tampered, replayed, duplicate and mismatched events leave the ledger unchanged, and mismatches go to the review queue. A valid test payment moves the invoice to Paid or PartPaid. |
 | FR-APR-1 | Queue every outbound artifact under the §7.2 matrix | code | SM-03 = 0 |
 | FR-APR-2 | Bind approval to a content hash. Any edit voids it. | code | An edit after approval re-runs the gate and requires re-approval |
+| FR-APR-3 | Flag any artifact that has waited for approval past a configured age, and name the stalled case (ADR-0031) | code | An aged artifact shows the flag on its case and in the approval queue. The alert waits for DF-05. |
 | FR-AUD-1 | Append-only audit event for every state change, model call, approval, waiver and sent-mark | code | Any artifact traces back to its inputs, model calls and approver |
 | FR-INT-1 | Tally adapter interface | spec only | Contract in `07-API-CONTRACTS.md` |
 | FR-INT-2 | Outbound send adapter interface, and the gate it would need | spec only | Contract and gate design in `07-API-CONTRACTS.md` |
-| FR-INT-3 | MCP server with read and draft tools only | code | No tool approves, sends, waives or changes approval state |
+| FR-INT-3 | MCP endpoint with read and draft tools only, under ADR-0026's constraints: pseudonymised structured records, no raw text, no unapproved draft bodies. Deferred from v1 (DF-12). | code | No tool approves, sends, waives or changes approval state. No tool returns raw text or the body of an unapproved draft. |
+
+
+**v1 status of requirements (ADR-0031, ADR-0032)**
+
+| Requirement | v1 status |
+|---|---|
+| FR-ING-1 to FR-ING-4 | Shrunk to: CSV and XLSX registers in a fixed schema, XLSX and CSV ledgers, CSV bank statements, pasted messages, mail fixtures and manual document-type tags. PDFs, OCR, live mail, WhatsApp and the mapping step are deferred as DF-06, DF-07, DF-08 and DF-16. |
+| FR-EVD-1 to FR-EVD-3 | Build-if-time, first in line |
+| FR-DSP-1 | Phase 2 (ADR-0032) |
+| FR-DSP-2 | Build-if-time as a manual action, otherwise Phase 2 |
+| FR-ANL-1, FR-ANL-2 | Deferred (DF-10) |
+| FR-PAY-1, FR-PAY-2 | Build-if-time, second in line |
+| FR-INT-3 | Deferred (DF-12) |
+| FR-HQ-1 to FR-HQ-6 | Shrunk to one queue, coarse per-invoice blocking and a Console age flag, with no digest |
+| Everything else | Built in v1 |
 
 ---
 
@@ -581,15 +601,15 @@ Low-confidence and high-impact model outputs wait here for a person. Much of the
 | ID | Requirement | How it is checked | Target |
 |---|---|---|---|
 | NFR-01 | **Correctness gate.** Slot scan, provision verification, tie-out, packet match (A2). | Adversarial gate suite | SM-01 = 0 [System] |
-| NFR-02 | **Tenant isolation.** Retrieval API enforcement plus Postgres RLS. Tenant is bound at graph start and is never a tool argument (ADR-0012). | Isolation suite, including direct SQL with the wrong tenant setting | SM-02 = 0 [System] |
-| NFR-03 | **Privacy.** Raw ingested content is processed locally. Hosted-model calls receive pseudonymised personal identifiers. Amounts and document refs are kept (ADR-0016). | PII scanner over logged hosted payloads | SM-05 = 0 [System] |
+| NFR-02 | **Tenant isolation.** Retrieval API enforcement plus Postgres RLS. Tenant is bound at graph start and is never a tool argument (ADR-0012). Checkpoints are included, and migrations and the runtime use separate database roles (ADR-0027). | Isolation suite, including direct SQL with the wrong tenant setting | SM-02 = 0 [System] |
+| NFR-03 | **Privacy.** Raw ingested content is processed locally. Hosted-model calls receive pseudonymised personal identifiers. Amounts and document refs are kept (ADR-0016). A blocking pre-send scan runs on every hosted payload, and a hosted call is refused if any redaction stage is unavailable (ADR-0021). | PII scanner over logged hosted payloads | SM-05 = 0 [System] |
 | NFR-04 | **Untrusted content.** Ingested text enters prompts only as delimited data. It never selects tools or changes state. Mitigation design is in `06`. | Injection suite | SM-04 = 0 [System] |
 | NFR-05 | **Auditability.** Append-only audit log. Every artifact can be reproduced from its recorded inputs. | Replay test | 100% of sampled artifacts reproduce [System] |
 | NFR-06 | **Determinism.** Engines (statutory, analytics, matching) are pure functions of inputs and versioned parameters. | Repeat-run test | Identical output across runs [System] |
 | NFR-07 | **Durability.** Cases, timers and the outbox live in Postgres and survive restarts (ADR-0013). | Kill-and-restart test mid-case | 100% of cases resume at the correct step [System] |
 | NFR-08 | **Exactly-once effects.** Webhooks, timers and the outbox relay are idempotent. | Duplicate-delivery test | SM-06 = 100% [System] |
 | NFR-09 | **Statutory versioning.** Provisions, bank rates and method parameters are effective-dated. | Recompute a past case | Uses the values in force on that date [System] |
-| NFR-10 | **Observability.** Every model call is traced with tenant, case, model, tokens and cost. Traces are masked (ADR-0015). | Trace coverage over an eval run | 100% of calls traced [System] |
+| NFR-10 | **Observability.** Every model call is traced with tenant, case, model, tokens and cost. Traces are masked (ADR-0015). In v1 this applies once tracing is built (build-if-time item 3). Until then the spend ledger is the source of truth for cost (ADR-0030). | Trace coverage over an eval run | 100% of calls traced [System] |
 | NFR-11 | **Cost reporting.** Cost per case is reported with and without amortised local GPU time. | Eval run report | Both figures in every run (SM-22) |
 | NFR-12 | **Security baseline.** RBAC per §7.2, sessions, secrets, webhook verification, rate limits. | Defined in `06` | Set in `06` |
 | NFR-13 | **Latency.** Ledger upload to BCS draft. | Timed eval run on reference hardware, defined in `05` | SM-23 [System] |
@@ -625,7 +645,7 @@ This is the most important section. It separates what we can measure now from wh
 | SM-02 | Cross-tenant leakage | Rows or chunks from another tenant returned by any query or retrieval path | Two seeded tenants with near-identical data. API calls, and direct SQL with the wrong tenant setting. | A, G | 0 [System] |
 | SM-03 | Approval bypass | Final artifacts or payment links with no matching approval record | Static check that no send path exists and links are created only by the approval handler, plus a runtime reconciliation of the audit log against artifacts | All | 0 [System] |
 | SM-04 | Injection-induced change | State changes, tool calls or tenant switches caused by instructions embedded in ingested content | Injection suite (`06`) | A | 0 [System] |
-| SM-05 | Unredacted identifiers sent to hosted models | Names, phone numbers, emails or individual PANs found in logged hosted-model payloads | PII scanner over every hosted payload in an eval run | G, H, A | 0 [System] |
+| SM-05 | Unredacted identifiers sent to hosted models | Names, phone numbers, emails or individual PANs found in logged hosted-model payloads | A blocking pre-send scan on every hosted payload, plus a scan of logged payloads (ADR-0021) | G, H, A | 0 [System] |
 | SM-06 | Exactly-once effects | Duplicate webhooks, timers and outbox messages that produce exactly one effect, divided by all duplicates injected | Duplicate-delivery test | A | 100% [System] |
 
 **Correctness**
@@ -643,7 +663,7 @@ This is the most important section. It separates what we can measure now from wh
 | SM-15 | AP request parsing | Precision and recall of requested document types and invoice refs | Labelled AP requests | G, H | ≥ 0.95 each [System] |
 | SM-16 | Document classification | Type accuracy, and field accuracy per field | Synthetic scans with layout and image noise | G | Type ≥ 0.95, fields ≥ 0.90 [System]. Synthetic scans understate how hard real phone photos are. |
 | SM-17 | Retrieval quality | recall@10 and MRR on the evidence, contractual and conversational corpora | Labelled query-to-chunk pairs | G, H | recall@10 ≥ 0.90, MRR ≥ 0.70 [System] |
-| SM-18 | Citation faithfulness | Cited spans that actually support the sentence they are attached to | Second-layer judge, plus a human spot check of a sample | G | ≥ 0.95 [System] |
+| SM-18 | Citation faithfulness, for dispute findings only (ADR-0024, ADR-0032) | Cited evidence spans that actually support the dispute finding they are attached to. Statutory artifacts are template-only, so SM-18 does not apply to them. | Second-layer judge, plus a human spot check of a sample | G | ≥ 0.95 [System] |
 | SM-19 | Dispute assessment agreement | Assessments matching the labelled validity (supported, partly, unsupported, insufficient) | Labelled dispute cases | G, H | ≥ 0.80 [System] |
 | SM-20 | Dispute evidence recall | Cases where every labelled required evidence item was retrieved during the investigation | Trajectory eval | G, H | ≥ 0.90 [System] |
 
@@ -651,10 +671,12 @@ This is the most important section. It separates what we can measure now from wh
 
 | ID | Metric | Definition | Method | Sources | Target |
 |---|---|---|---|---|---|
-| SM-21 | Local SLM share | Local SLM calls divided by all model calls | Traces over an eval run | All | ≥ 80% [System], from the brief |
+| SM-21 | Local SLM share | Local SLM calls divided by all model calls | The spend ledger over an eval run | All | ≥ 80% [System], from the brief. **In v1, a high share is partly a consequence of deferring the free-text hosted path (DF-14). It is not a routing optimisation. Every report states this next to the figure, with the task types that were eligible for hosted calls in that run (ADR-0034).** |
 | SM-22 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
 | SM-23 | Ledger-to-BCS latency | p95 time from uploading a ledger of up to 500 rows to the BCS draft | Timed run on reference hardware | G | ≤ 3 minutes [System] |
 | SM-24 | Spend-cap enforcement | Seeded runaway cases in which no model call starts after a cap is reached and an audit event is written, divided by all seeded runaway cases | Runaway-loop suite: frontier and SLM loops, per-wake and lifetime caps | A | 100% [System] |
+
+**v1 status (ADR-0031, ADR-0032):** SM-15 is measured only if evidence packets are built. SM-16 waits for DF-06. SM-17 to SM-20 are measured in Phase 2, and SM-18 for dispute findings only. Every other system metric is measured in v1.
 
 ### 10.3 Business outcome metrics (need a pilot)
 
@@ -743,7 +765,7 @@ This is the most important section. It separates what we can measure now from wh
 
 ## Appendix A. VERIFY register
 
-Every `[VERIFY]` tag in this document, in one place. Each row states the claim as this document uses it, the exact provision to check, and where to check it. When a row is confirmed or corrected, update the text that uses it and log the change in `PROJECT_CONTEXT.md`.
+Every `[VERIFY]` tag in this document, in one place. They are due for verification by elapsed build day 21 (ADR-0033). Each row states the claim as this document uses it, the exact provision to check, and where to check it. When a row is confirmed or corrected, update the text that uses it and log the change in `PROJECT_CONTEXT.md`.
 
 | ID | Claim as used here | Exact provision to check | Check against | Used in |
 |---|---|---|---|---|
@@ -878,6 +900,22 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 0017 | H set, generation by another model family, per-source metrics | §10.1 |
 | 0018 | Hat C delta pass after step 4 | Process only (`PROJECT_CONTEXT.md`) |
 | 0019 | Repo conventions and the verbatim brief | Header, `BRIEF.md` |
+| 0020 | v1 runtime, network boundary and region | §3.1 |
+| 0021 | One model gateway, fail-closed pseudonymisation, drafting-only hosted calls | NFR-03, SM-05 |
+| 0022 | Durable execution details | §5.9 |
+| 0023 | Audit log integrity | FR-AUD-1 |
+| 0024 | Gate extended; statutory artifacts template-only | §7.1 (A2), FR-STA-5, SM-18 |
+| 0025 | No third-party send paths; Razorpay hardened and build-if-time | §5.7, §7.1 (A8), FR-PAY-1, FR-PAY-2 |
+| 0026 | MCP deferred, with its constraints fixed | FR-INT-3 |
+| 0027 | Checkpoints isolated; separate database roles | NFR-02 |
+| 0028 | Authentication: the v1 minimum | §7.2 |
+| 0029 | Untrusted content boundaries | FR-ING-6 |
+| 0030 | Tracing, alerts and the real-data gate | NFR-10 |
+| 0031 | v1 scope | §3.1, §4, §8 status table, §10.2 status note, FR-APR-3 |
+| 0032 | Phase 2 | §4, §8 status table, SM-17 to SM-20 |
+| 0033 | Statute verification by build day 21 | Appendix A, Appendix B |
+| 0034 | SM-21 reported with its cause | SM-21 |
+| 0035 | The review sequence | Process only |
 
 **Corrections to the brief applied in this document**
 
@@ -888,3 +926,24 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 - Six of the seven "agents" are re-scoped. Four stay model-driven, and three become deterministic code (§6).
 - The statutory corpus is removed from RAG (ADR-0008).
 - "Human approval gate" is strengthened to "no send capability in v1" (ADR-0011).
+- The RAG layer (brief §2) is deferred from v1. It returns in Phase 2, together with the dispute agent that uses it (ADR-0032).
+
+---
+
+## Appendix D. Revision history
+
+| Date | Change | Decision |
+|---|---|---|
+| 2026-09-11 | First version, approved at checkpoint 1 | ADR-0001 to 0019 |
+| 2026-09-11 | DOC-01, DOC-03, GAP-01, GAP-02 | `PROJECT_CONTEXT.md` bug register |
+| 2026-09-12 | NFR-03 and SM-05: blocking pre-send scan, fail closed | ADR-0021 |
+| 2026-09-12 | Regulated tokens extended, echo check, FR-STA-5 template-only, SM-18 rescoped to dispute findings | ADR-0024 |
+| 2026-09-12 | A8 for pending drafts; FR-PAY-1 and FR-PAY-2 hardened | ADR-0025 |
+| 2026-09-12 | FR-INT-3 constraints | ADR-0026 |
+| 2026-09-12 | NFR-02 covers checkpoints and database roles | ADR-0027 |
+| 2026-09-12 | FR-ING-6 file controls | ADR-0029 |
+| 2026-09-12 | NFR-10 applies once tracing is built | ADR-0030 |
+| 2026-09-12 | FR-APR-3; FR-HQ-5 without the digest; v1 statuses of goals, requirements and metrics; Devanagari deferred | ADR-0031 |
+| 2026-09-12 | Phase 2 for G5, FR-DSP-1 and SM-17 to SM-20 | ADR-0032 |
+| 2026-09-12 | VERIFY tags due by build day 21 | ADR-0033 |
+| 2026-09-12 | SM-21 reported with its cause | ADR-0034 |

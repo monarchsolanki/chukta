@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | A blunt review of what the doc set asks for, measured against 28 days and one developer. It names every feature that does not fit and labels what happens to it, ranks the security test suites, costs authentication, and sequences the build so the project's claims are tested early. |
 | **Intended reader** | The owner, who decides the cuts. Hat A, who turns them into ADRs at step 4. Hat C, whose controls this review shrinks. |
-| **Status** | In Review |
+| **Status** | Approved by the owner 2026-09-11, including the §3 disagreement. The owner's decisions and fixes FB-01 and FB-02 were applied at step 4 (§10). |
 | **Author hat** | Hat B, Implementation Lead |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-12 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, ADR-0001 to 0019, `06`, `12` and `SEC-REVIEW-ARCH.md` at `7c66d16`, and the owner's SEC-01. `02` to `05` do not exist yet. |
 
 ### Conventions
@@ -182,6 +182,8 @@ DF-01 to DF-16 are written into `12` §9.2, each marked Required before the pilo
 | OD-2 | Move the Razorpay loop to build-if-time | **Build-if-time, second in line.** It proves none of the four claims, and it adds a send path that SR-02 had to close. Counting S-06, S-12 and ST-08, it costs 1 day, not the half day estimated at checkpoint 1. | The owner added it at checkpoint 1 (ADR-0011) |
 | OD-3 | Move evidence packets to build-if-time | **Build-if-time, first in line.** For a proof, Reconciliation is the richer half of the primary product: AI layout reading, a deterministic matcher, and an artifact that passes through the gate. Without OCR (DF-06), an evidence packet is mostly file bundling. | The PRD names Evidence and Reconciliation as the primary product (§1.3) |
 
+**Owner decisions (2026-09-11):** OD-2 and OD-3 agreed. OD-1 agreed for v1, with a correction to the plan's shape: the RAG layer returns together with the dispute agent in a bounded 8-day Phase 2 after v1 (ADR-0032). They are the two components that demonstrate retrieval engineering, so deferring them is right for v1 and wrong permanently. Phase 2 restores RAG with its consumer, which answers this review's objection instead of overriding it.
+
 ### 5.3 Build-if-time, in order
 
 These are built only from contingency, strictly in this order, after the committed 22 days. Each has its fallback declared now, so nothing is quietly dropped.
@@ -282,7 +284,7 @@ gantt
 | O-06: confirm the local model fits the developer's machine, and name the frontier model | 4 | B4 wires up both clients | B4 is built against a stub, and real-model evals slip |
 | O-05: the 80-message H set | 18 | B10 is evaluated against it | Conversation ships with G-set scores only. H-set results follow later. |
 | O-04: verified statute text (PRD Appendix B) | 21 | The final eval run uses real provisions | The L4 notice is shown on test fixtures only, and says so |
-| O-03: verify V01 to V24 | Before any statutory output leaves the developer's machine | These are statutory claims | Statutory artifacts stay labelled unverified |
+| O-03: verify V01 to V24 | 21, alongside O-04 (FB-01, ADR-0033) | The final eval run exercises the L4 notice against verified provisions. The earlier trigger, "before any statutory output leaves the developer's machine", never fires in v1. | Unverified tags are listed in the eval report, and dependent artifacts stay labelled unverified |
 | OD-1 to OD-3 (§5.2) | Before day 12 | They change what gets built after the checkpoint | Hat B's recommendations apply by default |
 | `01` A-Q1 (mail provider) and A-Q6 (OCR engine) | Not needed in v1 | Deferred as DF-08 and DF-06 | Not applicable |
 
@@ -302,7 +304,7 @@ These cuts touch frozen documents. Each needs an ADR at step 4, not a quiet edit
 - **PRD metrics:**
   - SM-15, SM-16, SM-17, SM-19 and SM-20 are not measured in v1, because their features are deferred.
   - SM-18 is skipped (SK-01).
-  - SM-21 and SM-22 are still reported. SM-21 becomes easier to meet, because hosted calls are drafting only.
+  - SM-21 and SM-22 are still reported. SM-21 becomes easier to meet, because hosted calls are drafting only. A high SM-21 in v1 is therefore partly a consequence of deferring DF-14, not a routing optimisation. The PRD row and every eval report say so next to the figure (FB-02, ADR-0034).
 - **PRD §3.1:** Devanagari support is deferred (DF-13).
 - **NFR-10:** full trace coverage depends on build-if-time item 3. The spend ledger stays the source of truth for cost.
 - **ADR-0011:** the Razorpay loop moves to build-if-time, if the owner agrees (OD-2).
@@ -331,3 +333,13 @@ These cuts touch frozen documents. Each needs an ADR at step 4, not a quiet edit
 | Synthetic ledgers are too regular to test layout inference | SM-09 looks better than reality | The generator varies headers, sign conventions and merged cells on purpose. G and H results are reported separately (ADR-0017). |
 | One developer means no reviewer | Defects reach `main` | Every claim suite runs on every push, and the owner reviews at each checkpoint |
 | The plan is 2 days over from day one | Contingency is thin | The day-12 rule (§6) |
+
+---
+
+## 10. Revision history
+
+| Date | Change | Why |
+|---|---|---|
+| 2026-09-11 | First version | Hat B, step 3 |
+| 2026-09-11 | Approved by the owner, including the §3 disagreement | Owner's review |
+| 2026-09-12 | Owner decisions recorded under §5.2. §7's O-03 row pinned to build day 21. §8's SM-21 note given its cause. | OD-1 to OD-3, FB-01 (ADR-0033), FB-02 (ADR-0034) |
