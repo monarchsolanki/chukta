@@ -28,7 +28,7 @@
 
 | | Verified 2026-09-12 |
 |---|---|
-| Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to private GitHub repo `monarchsolanki/chukta`. Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
+| Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to **public** GitHub repo <https://github.com/monarchsolanki/chukta> (made public 2026-09-13 at the owner's request). Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
 | Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · then delta 1 |
 | Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md` and `06-SECURITY-THREAT-MODEL.md` (revised at step 4, frozen for the delta pass). `12-DATA-CLASSIFICATION.md` (frozen). ADR-0001 to 0035 (In Review, all Accepted). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
 | Pending | The owner's review of step 4 and delta 1, and O-19. Then Hat A's 02 to 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. |
@@ -70,6 +70,7 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 
 ## Traps: easy to get wrong
 
+- **The repo is public.** Anything committed is published. No secrets, real personal data, or anything about other projects beyond what is already here.
 - **Never recreate the repo inside `~/N073`.** N073 pushes to the SETU company org. Chukta was nested there for a few minutes on 11 Sep and was moved out.
 - **Never `git add -A` in `~/chukta`.** macOS drops `.DS_Store` files, and the repo has no `.gitignore`, because the brief allows only `docs/` and `README.md`. Add paths explicitly.
 - **No Claude attribution on any commit or PR, in any project.** This is the owner's standing rule. Claude Code's global `attribution` setting in `~/.claude/settings.json` is set to empty strings. Check new commit messages before every push.
@@ -136,6 +137,11 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-13 · Repo made public
+- At the owner's request, so the doc set can be shared with another AI by link.
+- Scanned every version of every file first: no secrets, keys or tokens, no private or college email, and all 15 commits use the GitHub noreply address. The only personal detail is the mention of the SETU company org and `N073` in this file and ADR-0019, which the owner accepted by asking for a public repo.
+- Checked afterwards: the repo page, the file page and the raw file all open without a GitHub login.
 
 ### 2026-09-12 · Hat C delta 1 over step 4. STOP.
 - Reviewed ADR-0020 to 0035 (`a213c8b`) and the revised documents (`f9ca1c2`). Each finding was checked against its ADR **and** the document text a builder reads.

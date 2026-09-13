@@ -14,7 +14,7 @@ The brief requires a single `main` branch, conventional commits, no `Co-Authored
 
 ## Decision
 
-- **Location:** `~/chukta`, never inside `~/N073`, which pushes to a company org. Remote: private `monarchsolanki/chukta`.
+- **Location:** `~/chukta`, never inside `~/N073`, which pushes to a company org. Remote: `monarchsolanki/chukta`, private at first and public since 2026-09-13 at the owner's request. Anything committed is published.
 - **Identity:** commits use the owner's GitHub noreply address, set repo-locally. They never use the college address.
 - **Commits:** single `main` and conventional messages. **No `Co-Authored-By` trailer and no Claude attribution of any kind.** That is the owner's standing rule for every project. One commit per completed deliverable. The ADR set counts as one deliverable.
 - **Doc headers:** every doc opens with purpose, intended reader and status (Draft, In Review or Frozen). ADRs also carry a decision status (Proposed, Accepted or Superseded). A superseded ADR is never edited. A new ADR supersedes it, and the two link to each other.
