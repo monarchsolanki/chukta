@@ -21,10 +21,10 @@
 ## START HERE (one screen, verified 2026-09-13)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** `02` and `03` are approved (2026-09-13). The owner accepted OD-4 as a demo driver (ADR-0039), raised FB-03, the drafting node's load-bearing test (ADR-0040, SM-25), and moved O-06 ahead of `05`. **`05` is blocked until the owner answers O-06.**
+- **Current step:** `02` and `03` are approved. O-06's fit test ran on 2026-09-13, and **`qwen3.6:27b` failed its pre-set rule** on the developer's machine, even with Docker idle (O-06 row, and the log). `05` stays blocked until the owner picks the local model.
 - **v1 in one line:** the four claims (tenant isolation, citation gate, no send path, spend cap) tested by build day 12, the statutory engine as the gate's carrier, and two AI slices, Reconciliation and Conversation, in 24 working days (ADR-0031). **Phase 2** follows: 8 days with a hard stop, the dispute agent with its RAG layer (ADR-0032).
-- **🛑 STOP.** Waiting for the owner's answer to O-06, the local model, with measured facts in its row. Then `05`, Hat C's delta 2 over `02`, `03` and `05`, and Hat B's `07` to `11`.
-- **Needs the owner:** O-06.
+- **🛑 STOP.** Waiting for the owner's O-06 decision after the failed fit test. Hat A's recommendation is the pre-agreed fallback, `qwen3:14b`: a 9.3 GB download, re-tested under the same rule. Then `05`, Hat C's delta 2 over `02`, `03` and `05`, and Hat B's `07` to `11`.
+- **Needs the owner:** O-06, the local model, after the fit test.
 
 | | Verified 2026-09-13 |
 |---|---|
@@ -59,7 +59,7 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 | O-03 | Verify V01 to V24 (PRD Appendix A) by elapsed build day 21, alongside O-04 (ADR-0033). Verify V25 to V43 (`06` Appendix A) before the pilot gate. | Monarch | Build day 21, and the pilot gate |
 | O-04 | Load verified statute text per PRD Appendix B | Monarch | Build day 21 |
 | O-05 | Hand-write 80 Hinglish messages, with 2 or 3 other contributors | Monarch | Build day 18 |
-| O-06 | **Blocks `05`** (the owner's sequencing, 2026-09-13). Choose the local model. **Measured on the developer's machine, 2026-09-13, with nothing downloaded:** MacBook Pro with an Apple M5 Pro, 25.8 GB unified memory (sold as 24 GB), a Metal GPU budget (`recommendedMaxWorkingSetSize`) of 19.07 GB, Ollama 0.30.8 installed. `qwen3.6:27b` exists on the Ollama registry: Q4_K_M, 27.3B parameters, 16.8 GB of weights. That leaves about 2.3 GB of the GPU budget for context and compute buffers, and about 9 GB of total memory for everything else, including macOS, Docker and the v1 stack. Other sizes measured: `qwen3:14b` (Q4_K_M, 14.8B, 9.3 GB), `qwen3:8b` (5.2 GB), `qwen3:30b` (MoE, 18.6 GB, which leaves almost no GPU budget for context). The only other `qwen3.6` size found is 35b, which is larger. | Monarch | `05` |
+| O-06 | **Blocks `05`.** Choose the local model. **Fit test, 2026-09-13, on `qwen3.6:27b`, with the pass rule set in advance (100% of the model on the GPU, and no swap growth during a 15-call batch at 8,192 tokens of context): FAIL in both runs.** Run A, with Docker's VM idle: 86.8% on the GPU, swap from 0 to 6.1 GB on load and +4.7 GB during the batch, 17.9 tokens per second, 15 of 15 valid JSON. Run B, with Postgres plus a 6.5 GiB fill inside Docker's 7.75 GiB VM: 82.3% on the GPU at worst, +3.7 GB of swap during the batch, 14.6 tokens per second, 12 of 15 valid JSON. Machine: Apple M5 Pro, 25.8 GB unified memory, Metal GPU budget 19.07 GB. The pre-agreed fallback, `qwen3:14b` (Q4_K_M, 14.8B, 9.3 GB), is not downloaded yet. | Monarch | `05` |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
 | O-11 | Hat C's delta 2 over `02`, `03` and `05` (ADR-0035) | Hat C | After `05` |
 | O-12 | Delta 1 verified every resolution. Five are decided in ADRs but not yet visible in a document: SR-04, SR-06, SR-15, SR-18 and SEC-01. They are checked in `02` to `04` (delta 2) and `10`. SR-10 stays open until build-if-time item 4, or DF-20 at the pilot gate. | Hat C | Delta 2 |
@@ -90,7 +90,7 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 - **Payment details are regulated tokens** (SR-01, ADR-0024). An account number, UPI ID, IFSC code, URL, email or phone in outbound prose must come from a slot, never from model text.
 - **In v1, hosted model calls are drafting prompts only** (ADR-0021). A free-text hosted call waits for DF-14's full pseudonymisation pipeline.
 - **Phase 2 is 8 days with a hard stop, not a backlog** (ADR-0032). Unfinished work goes back to `12` §9.2.
-- **`05` waits for O-06.** Three of the four model nodes run only on the local SLM (`03` §7), so the model choice moves the targets `05` sets.
+- **`05` waits for O-06.** Three of the four model nodes run only on the local SLM (`03` §7), so the model choice moves the targets `05` sets. `qwen3.6:27b` failed its fit test on the developer's machine.
 - **Never record a decision as the owner's without the owner's words in the record** (O-17).
 
 ## Keeping this current is part of the job
@@ -141,6 +141,17 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-13 · O-06 fit test: `qwen3.6:27b` fails on the developer's machine
+- The owner approved the 17.8 GB download and the test. **The pass rule was set before the test ran:** with the stack running, every sample shows the model 100% on the GPU, and swap does not grow during a 15-call batch (10 Hinglish and English classifications, 5 ledger-layout inferences, 8,192 tokens of context). No tolerance was added afterwards.
+- v1's stack does not exist yet. Run B used a stand-in built only from images already on the machine: a real Postgres container, plus a Node container holding 6.5 GiB inside Docker's 7.75 GiB VM, which is the most memory the stack could take. Run A, with Docker's VM idle, was the baseline.
+- **Both runs failed.**
+  - **Run A:** 86.8% of the model on the GPU (15.61 of 17.97 GB). Loading pushed swap from 0 to 6.1 GB, and the batch added 4.7 GB. About 18 tokens per second, and 15 of 15 valid JSON.
+  - **Run B:** 82.3% on the GPU at worst, with swap growth of 3.7 GB during the batch. About 15 tokens per second, and only 12 of 15 valid JSON. During the batch Ollama's allocation for the model grew from 17.97 to 21.66 GB, with 17.82 GB on the GPU. The cause is not yet explained.
+- **The model works when it runs, so the failure is memory, not capability.** On this 25.8 GB machine the model never sat fully on the GPU, even with nothing but an idle Docker VM beside it.
+- **Correction, logged here:** mid-test, Hat A reported that run B was still running and would be stopped. It had already finished. Nothing was cut short, and both runs are complete.
+- Afterwards the test containers were removed and the model unloaded. The model stays on disk until the owner decides.
+- 🛑 STOP. The owner decides O-06.
 
 ### 2026-09-13 · `02` and `03` approved; OD-4, FB-03, O-06 moved ahead of `05`; DOC-04
 - **The owner approved `02` and `03`,** confirming DLT-02, DLT-03 and SEC-01 as correctly resolved, and named `02` §7 and §4.4 as the strongest work in the set.
@@ -470,3 +481,4 @@ The reasons are in the feasibility review §5.4.
 - **Remove an input rather than filter it, when the input needs no model.** Approved seller text needed no rewriting, so taking it out of drafting prompts made ADR-0021's invariant absolute, with no detector to maintain (DLT-02).
 - **Apply the load-bearing test to every AI component, including the last one.** The project cut AI from three components and never asked whether its only hosted node earned its place (FB-03, the owner's finding).
 - **A lint that falls back to a coarser match finds missing references, never wrong ones.** `03` pointed at existing but wrong sections, and passed (DOC-04).
+- **A model that fits the GPU budget on paper can still fail.** The budget shares memory with macOS, Docker and everything else running. 16.8 GB of weights looked fine against a 19.07 GB budget, and still never sat fully on the GPU. Set the pass rule first, then measure (O-06).
