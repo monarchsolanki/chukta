@@ -21,7 +21,7 @@
 ## START HERE (one screen, verified 2026-09-13)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** step 4 and Hat C's delta 1 are done and reviewed. On 2026-09-13 the owner decided O-17 (Phase 2's metric set) and all six delta-1 findings (O-19), recorded as ADR amendments, and added two constraints: C-1 (free tiers only in v1, with an upgrade path) and C-2 (API-first, so a mobile client can come later). **C-1 and C-2 are now recorded (ADR-0036 to ADR-0038) and costed by Hat B at 1.5 days, all after day 12 (feasibility review §11). Next: revise `01`, the PRD, `06` and `12` to match (O-22), then `02` and `03`.**
+- **Current step:** step 4 and Hat C's delta 1 are done and reviewed. On 2026-09-13 the owner decided O-17 (Phase 2's metric set) and all six delta-1 findings (O-19), recorded as ADR amendments, and added two constraints: C-1 (free tiers only in v1, with an upgrade path) and C-2 (API-first, so a mobile client can come later). **C-1 and C-2 are now recorded (ADR-0036 to ADR-0038) and costed by Hat B at 1.5 days, all after day 12 (feasibility review §11). The PRD, `01`, `06` and `12` are revised to match. Next: `02` and `03`.**
 - **v1 in one line:** the four claims (tenant isolation, citation gate, no send path, spend cap) tested by build day 12, the statutory engine as the gate's carrier, and two AI slices, Reconciliation and Conversation, in 24 working days (ADR-0031). **Phase 2** follows: 8 days with a hard stop, the dispute agent with its RAG layer (ADR-0032).
 - **🛑 STOP after `03`.** Then `05`, Hat C's delta 2 over `02`, `03` and `05`, and Hat B's `07` to `11`. `04` moved to Phase 2's first day (ADR-0035).
 - **Needs the owner:** OD-4 (O-24), which is optional and due before build day 12.
@@ -29,9 +29,9 @@
 | | Verified 2026-09-13 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to **public** GitHub repo <https://github.com/monarchsolanki/chukta> (made public 2026-09-13 at the owner's request). Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · `7a60972` delta 1 · `cef46cc` repo made public · then the owner's O-17 and O-19 decisions |
-| Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md` and `06-SECURITY-THREAT-MODEL.md` (revised at step 4, frozen for the delta pass). `12-DATA-CLASSIFICATION.md` (frozen). ADR-0001 to 0035 (In Review, all Accepted). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
-| Pending | The C-1 and C-2 document revisions (O-22). Then Hat A's 02 and 03 (STOP), then 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. `04` waits for Phase 2. |
+| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · `7a60972` delta 1 · `cef46cc` repo made public · `76d0eb7` O-17 and O-19 decisions · `ef1fc8a` C-1 and C-2 ADRs · then the C-1 and C-2 revisions |
+| Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md`, `06-SECURITY-THREAT-MODEL.md` and `12-DATA-CLASSIFICATION.md` (revised 2026-09-13, frozen for delta 2). ADR-0001 to 0038 (In Review, all Accepted). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
+| Pending | Hat A's 02 and 03 (STOP), then 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. `04` waits for Phase 2. |
 | Statutory corpus | Empty by design. The owner loads verified text by build day 21 (ADR-0033, PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -45,14 +45,14 @@
 | 3 | B | IMPL-FEASIBILITY-REVIEW | ✅ Approved 2026-09-11, with OD-1 to OD-3 decided |
 | 4 | A | Revision: ADR-0020 to 0035 and document revisions | ✅ Done 2026-09-12 |
 | 4b | C | Delta 1 over the step-4 revision | ✅ Done 2026-09-12. 6 new findings (DLT-01 to DLT-06), one High. Awaiting the owner's review. |
-| 5a | A | 02 and 03 (STOP), then 05. `04` moved to Phase 2's first day. | Not started. The C-1 and C-2 document revisions come first. |
+| 5a | A | 02 and 03 (STOP), then 05. `04` moved to Phase 2's first day. | Next |
 | 5b | C | Delta 2 over 02, 03 and 05 | Not started |
 | 5c | B | 07 to 11 | Not started |
 | 6 | Final | README, INDEX | Not started |
 
 ## What is actually open (verified 2026-09-13)
 
-Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status table), O-10 (FR-APR-3), O-13 (ADR-0020 to 0030), O-15 (the owner's decisions) and O-16 (the step-4 revisions). O-01 and O-02 closed on 2026-09-11. O-17 and O-19 closed on 2026-09-13 by the owner's decisions. O-21 closed on 2026-09-13 by ADR-0036 to ADR-0038 and the feasibility review §11.
+Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status table), O-10 (FR-APR-3), O-13 (ADR-0020 to 0030), O-15 (the owner's decisions) and O-16 (the step-4 revisions). O-01 and O-02 closed on 2026-09-11. O-17 and O-19 closed on 2026-09-13 by the owner's decisions. O-21 closed on 2026-09-13 by ADR-0036 to ADR-0038 and the feasibility review §11. O-22 closed on 2026-09-13 by the revision of `01`, the PRD, `06` and `12`.
 
 | ID | Item | Owner | Due or blocks |
 |---|---|---|---|
@@ -66,7 +66,6 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 | O-14 | SEC-01: the database grants, table by table, in `02-DATA-MODEL.md` (ADR-0027) | Hat A | `02` |
 | O-18 | Phase 2's paragraph in `09-BUILD-PLAN.md`: a named follow-on of 8 days with a hard stop, not an open backlog (ADR-0032) | Hat B | Step 5c |
 | O-20 | DLT-05's root cause as a check: a doc-lint rule in `11`. When a control is decided for one direction or one instance of a pattern, every other instance must be named as covered or explicitly excepted. | Hat B | `11` |
-| O-22 | The next revision of `01`, the PRD, `06` and `12`: DLT-01 (loopback), DLT-06 (stale text), and the C-1 and C-2 changes named in ADR-0036 to ADR-0038 | Hat A | Before `02` |
 | O-23 | Confirm the Gemini API's current free-tier limits and data terms, and the paid tier's non-training terms, before any figure or claim about them appears in a document. Limits live in configuration (ADR-0036, ADR-0037). | Monarch | Build day 4, with O-06 |
 | O-24 | OD-4: replace B13's upload pages with a command-line client of `/api/v1`, winning back 0.5 day of contingency (feasibility review §11.3). Hat B recommends it. | Monarch | Before build day 12 |
 
@@ -119,20 +118,20 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 | If you need | Read | Status |
 |---|---|---|
 | The original requirements | [`BRIEF.md`](BRIEF.md) | Frozen |
-| What we build, for whom, and how we measure it | [`00-PRD.md`](00-PRD.md) | Revised at step 4. Frozen for the delta pass. |
-| Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0035, summarised in the decision register below | Written, In Review, all Accepted |
-| System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | Revised at step 4. Frozen for the delta pass. |
+| What we build, for whom, and how we measure it | [`00-PRD.md`](00-PRD.md) | Revised 2026-09-13. Frozen for delta 2. |
+| Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0038, summarised in the decision register below | Written, In Review, all Accepted |
+| System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | Revised 2026-09-13. Frozen for delta 2. |
 | Data model, including the database grants (O-14) | `02-DATA-MODEL.md` | Pending (Hat A, step 5a) |
 | Agent and engine design, including node input contracts (ADR-0029) | `03-AGENT-DESIGN.md` | Pending (Hat A, step 5a) |
 | Retrieval design | `04-RAG-DESIGN.md` | Written on Phase 2's first day (ADR-0032, ADR-0035) |
 | Evaluation plan | `05-EVAL-PLAN.md` | Pending (Hat A, step 5a) |
-| Threat model: threats, deep dives, security decisions and their v1 status, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | Revised at step 4. Frozen for the delta pass. |
-| API contracts, including the send adapter and Tally adapter interfaces | `07-API-CONTRACTS.md` | Pending (Hat B) |
+| Threat model: threats, deep dives, security decisions and their v1 status, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | Revised 2026-09-13. Frozen for delta 2. |
+| API contracts: the public JSON API and token model (ADR-0038), plus the send adapter and Tally adapter interfaces | `07-API-CONTRACTS.md` | Pending (Hat B) |
 | Synthetic data | `08-SYNTHETIC-DATA-SPEC.md` | Pending (Hat B) |
 | The build plan: v1 in 24 days, then Phase 2 | `09-BUILD-PLAN.md` | Pending (Hat B) |
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
-| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Frozen. §9.2 lists DF-01 to DF-16. |
+| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Revised 2026-09-13. §9.1 has 14 conditions. §9.2 lists DF-01 to DF-16. |
 | Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings plus SEC-01, and the delta passes. [`reviews/IMPL-FEASIBILITY-REVIEW.md`](reviews/IMPL-FEASIBILITY-REVIEW.md): what fits in 28 days, the cuts, the build order. | Both approved. Delta 1 done 2026-09-12. |
 | Full index | `INDEX.md` | Final step |
 
@@ -141,6 +140,12 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-13 · PRD, `01`, `06` and `12` revised for C-1, C-2 and delta 1
+- **PRD:** NFR-14 counts quota units. SM-21 and SM-22 report per mode and record the provider tier. New NFR-15 makes the Console API-first. §7.3's trace link is conditional on tracing being built (DLT-06).
+- **`01`:** the Console serves and consumes `/api/v1`, and D-02 is reworded. Two model modes and quota windows (§8). The published port is loopback-only, with a fifth CI assertion (DLT-01). MCP is labelled as not in v1 (DLT-06).
+- **`06`:** P-9's residual is higher on a future mobile client.
+- **`12`:** the frontier provider is named in the processors table. Pilot-gate condition 14: a paid non-training tier before real data.
 
 ### 2026-09-13 · C-1 and C-2 recorded as ADRs, and costed by Hat B
 - **ADR-0036 (C-1):**

@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Identifies what can go wrong in Chukta, who would cause it, and the controls that stop it. Covers every threat the brief requires, and records the security decisions that answer the architecture's open questions. |
 | **Intended reader** | The developer building v1, Hat A (revising at step 4), Hat B (planning tests in `11`), and whoever approves a pilot. |
-| **Status** | Revised at step 4 (2026-09-12): decisions promoted to ADRs, and v1 statuses added (§4.1, §5.1, §6). The revision history is §7. Frozen for the Hat C delta pass. Later changes go through an ADR. |
+| **Status** | Revised 2026-09-13 for ADR-0038: P-9's residual on a mobile client (§3.8, §6). The revision history is §7. Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
-| **Last updated** | 2026-09-12 |
+| **Last updated** | 2026-09-13 |
 | **Reviews** | [`00-PRD.md`](00-PRD.md), [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) and [ADR-0001 to ADR-0019](adr/). `02` to `05` do not exist yet. They get a delta pass later (PROJECT_CONTEXT O-11). |
 | **Companions** | `12-DATA-CLASSIFICATION.md` defines data classes DC-0 to DC-5. `reviews/SEC-REVIEW-ARCH.md` holds the findings against Hat A's documents. |
 
@@ -355,9 +355,9 @@ The brief asks whether any code path can send an outbound message without human 
 | P-6 | An approval is replayed onto a different artifact | The approval record binds artifact ID, content hash, approver and time, and the server checks all four | ST-06 |
 | P-7 | The wrong role approves, or a statutory notice is approved without review | Server-side RBAC, CA attestation by default, and step-up for L3 and L4 | ST-07 |
 | P-8 | The mail provider bounces or auto-replies to the buyer | No bounce or auto-reply action is configured on the inbound route | Configuration check |
-| P-9 | **A person copies a pending draft and sends it by hand** | Pending drafts carry a watermark. Copy and export are disabled, and send links appear only after approval (S-13). Screenshots cannot be stopped, so this residual is accepted, and the audit records who viewed what. | Manual review |
+| P-9 | **A person copies a pending draft and sends it by hand** | Pending drafts carry a watermark. Copy and export are disabled, and send links appear only after approval (S-13). Screenshots cannot be stopped, so this residual is accepted, and the audit records who viewed what. **On a future mobile client the residual grows** (ADR-0038): screenshots and screen recording are one gesture away, and on-device text recognition defeats copy-disable. For mobile, P-9 is the weakest control on this list. | Manual review |
 
-**Residual:** P-9 stays Medium by design. Every other path is closed by construction, or by a test that runs on every push.
+**Residual:** P-9 stays Medium by design for the web, and is higher for a mobile client (ADR-0038). Every other path is closed by construction, or by a test that runs on every push.
 
 ---
 
@@ -442,7 +442,7 @@ The owner ranked ST-03, ST-04, ST-06 and ST-11 as non-negotiable, because they v
 
 | Risk | Why it is accepted | What would change it |
 |---|---|---|
-| A person copies a pending draft and sends it by hand (T-17, P-9) | Screenshots cannot be prevented. The watermark, disabled copy and the audit trail narrow it. | Nothing technical. Training and the audit trail at the pilot. |
+| A person copies a pending draft and sends it by hand (T-17, P-9) | Screenshots cannot be prevented. The watermark, disabled copy and the audit trail narrow it. On a phone the watermark and copy-disable are weaker still, so the residual is higher for a mobile client (ADR-0038). | Nothing technical. Training and the audit trail at the pilot. |
 | A genuine citation applied to an invoice it does not fit (T-06) | The gate proves provenance, not applicability | CA review by default, verification of every tag (O-03), and the eligibility engine's human-confirmed inputs |
 | The model misclassifies a low-impact intent (T-01) | Code validation and the review queue bound it | Eval results on the H set (SM-13) |
 | Supply-chain compromise (T-19) | Pinning and scanning reduce the risk, but cannot remove it | An SBOM review and a penetration test at the pilot gate |
@@ -461,6 +461,7 @@ Everything else in §2 is Low residual, or is closed by a test that runs on ever
 | 2026-09-11 | First version | Hat C, step 2 |
 | 2026-09-11 | Approved by the owner, and frozen for step 3 review | Owner's review |
 | 2026-09-12 | §4 decisions promoted to ADR-0020 to 0030. §4.1 and §5.1 added, and a §6 row for v1 without MFA. | Step 4 (ADR-0031) |
+| 2026-09-13 | P-9's residual is higher on a future mobile client (§3.8, §6) | ADR-0038 |
 
 ---
 

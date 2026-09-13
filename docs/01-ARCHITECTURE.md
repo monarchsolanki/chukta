@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Defines the components, boundaries, runtime behaviour and deployment of Chukta v1, and shows how each PRD requirement is met. |
 | **Intended reader** | The developer building v1, and the Hat B and Hat C reviewers. Read the PRD first. |
-| **Status** | Revised at step 4 (2026-09-12) through ADR-0020 to ADR-0031. The revision history is §17. Frozen for the Hat C delta pass. Later changes go through an ADR. |
+| **Status** | Revised 2026-09-13 through ADR-0036 and ADR-0038 and the delta-1 decisions (DLT-01, DLT-06). The revision history is §17. Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
-| **Last updated** | 2026-09-12 |
+| **Last updated** | 2026-09-13 |
 | **Depends on** | [`00-PRD.md`](00-PRD.md) (Frozen for step 2 review) and [ADR-0001 to ADR-0019](adr/) |
 
 ### Conventions
@@ -54,7 +54,7 @@ flowchart LR
   RZP["Razorpay test mode"]
   LLM["Hosted frontier model API"]
   LF["Langfuse Cloud"]
-  MCPC["User's own MCP client"]
+  MCPC["User's own MCP client<br/>(not in v1)"]
 
   OW -->|"browser"| SYS
   AC -->|"browser"| SYS
@@ -83,13 +83,13 @@ flowchart TB
   subgraph Z0["Z0 Internet (untrusted)"]
     U["Users' browsers"]
     WH["Webhook senders:<br/>inbound mail, Razorpay"]
-    MC["MCP clients"]
+    MC["MCP clients (not in v1)"]
   end
   subgraph Z1["Z1 Edge"]
     NG["Nginx<br/>TLS, rate limits, routing"]
   end
   subgraph Z2["Z2 Application (no internet egress)"]
-    WEB["Console: Next.js 15<br/>UI, BFF API, MCP endpoint,<br/>auth, RBAC, webhook receivers, Prisma"]
+    WEB["Console: Next.js 15<br/>UI and JSON API /api/v1,<br/>MCP endpoint (not in v1),<br/>auth, RBAC, webhook receivers"]
   end
   subgraph Z3["Z3 Internal compute (no inbound from internet)"]
     API["Agent API: FastAPI"]
@@ -152,7 +152,7 @@ The "must never" column matters as much as the responsibilities. Each entry is e
 | Component | Runtime | Responsible for | Must never |
 |---|---|---|---|
 | Nginx | Container | TLS, rate limits per route and per client, request size limits, routing to the Console, including its MCP endpoint | Expose FastAPI, Redis, Postgres or Ollama |
-| Console | Next.js 15, Node | UI, BFF API, sessions (MFA waits for the pilot gate, ADR-0028), RBAC and active-tenant checks, approval and review-queue screens, webhook receivers (verify, persist, acknowledge), owner of the Prisma schema definition. It connects as the runtime database role and never runs migrations (ADR-0027). | Call a model or any external API. Process a webhook payload inline. Depend on a messaging SDK. |
+| Console | Next.js 15, Node | UI, and the public JSON API at `/api/v1`, which the UI itself consumes (ADR-0038), sessions (MFA waits for the pilot gate, ADR-0028), RBAC and active-tenant checks, approval and review-queue screens, webhook receivers (verify, persist, acknowledge), owner of the Prisma schema definition. It connects as the runtime database role and never runs migrations (ADR-0027). | Call a model or any external API. Process a webhook payload inline. Depend on a messaging SDK. Read the database from UI code, outside the API data layer (ADR-0038). |
 | Migrate job | One-shot Compose service | Runs Prisma migrations and the LangGraph checkpointer setup as the migration role, then exits (ADR-0027) | Stay running, or share its database credentials with any other service |
 | MCP endpoint | A route inside the Console (D-02) | Read and draft tools for a user's MCP client. Authenticated by an access token scoped to one tenant with read and draft rights, and checked by the same RBAC layer as the UI. Deferred from v1 (DF-12). When built, it follows ADR-0026. | Expose an approve, send or waive tool (FR-INT-3). Act outside its token's tenant. |
 | Agent API | FastAPI, Python | Internal endpoints: submit work, read agent outputs, resume a graph after approval. Verifies the Console's signed internal token. | Accept traffic from outside the private network |
@@ -383,6 +383,7 @@ The gateway reads this table from configuration. Per-task changes follow eval re
 - **Low confidence falls back to the review queue, not to the frontier model** (D-09). A tenant can switch one task to frontier fallback after evals justify it.
 - **Budgets.** Each task has a token budget. Budgets add up into the per-case caps that the breaker enforces (NFR-14).
 - **Fail closed (ADR-0021).** A blocking pre-send scan runs on every hosted payload. If any redaction stage is unavailable, the hosted call is refused.
+- **Two modes (ADR-0036).** With no hosted key configured, the system runs in **local-only mode**: drafting goes to the local SLM and nothing leaves the machine. With a key, drafting goes to the configured frontier provider, which is the Gemini API free tier in v1. A run never switches mode partway, every eval figure states its mode, and the breaker also enforces the provider's quota windows.
 - **v1 status (ADR-0021, ADR-0031, ADR-0032).** In v1 the only hosted calls are drafting prompts built from slots. The frontier rows for narration residuals and dispute investigation stay inactive until DF-14's name-finding pass exists, and dispute investigation arrives in Phase 2. Scan classification waits for OCR (DF-06).
 
 ---
@@ -422,7 +423,7 @@ flowchart LR
     WRK["workers<br/>networks: data, compute"]
     PXY["egress proxy<br/>networks: compute, egress"]
   end
-  BRW["Browser"] -->|"published HTTPS port"| NGX
+  BRW["Browser"] -->|"HTTPS on 127.0.0.1 only"| NGX
   NGX --> CON
   CON --> DAT
   WRK --> DAT
@@ -433,7 +434,7 @@ flowchart LR
 
 | Network | Type | Members | Route off the machine |
 |---|---|---|---|
-| `edge` | Normal bridge | nginx | Yes. Docker can publish a port only from a network that has a route out. |
+| `edge` | Normal bridge | nginx | Yes. Docker can publish a port only from a network that has a route out. The port is published on `127.0.0.1` only, so nothing off the machine can reach it (DLT-01, ADR-0028). |
 | `app` | `internal: true` | nginx, console | None |
 | `data` | `internal: true` | console, agent-api, workers, scheduler, the one-shot migrate job, postgres, redis, minio | None |
 | `compute` | `internal: true` | workers, egress proxy | None |
@@ -457,6 +458,7 @@ So the proxy is the only exit that application code can use. nginx is the one ot
 2. Through the proxy, an allowlisted domain succeeds and any other domain is refused.
 3. The console cannot reach the proxy at all.
 4. nginx cannot open a connection to Postgres.
+5. The published port is bound to `127.0.0.1` only (DLT-01).
 
 Before this change, the property could be checked only in a deployed environment.
 
@@ -605,7 +607,7 @@ flowchart LR
 | ID | Decision | Why | Alternatives rejected |
 |---|---|---|---|
 | D-01 | All model calls go through one gateway library. CI fails if any other module imports a model SDK. | One place enforces routing, redaction, budget, validation, tracing and cost (P8) | A client per agent: every agent would reimplement the controls, and one would miss something |
-| D-02 | The Console is the only public application surface. It receives all webhooks and serves the MCP endpoint as a route. The Agent API is internal only. *Revised 2026-09-11 (F-02): the separate MCP server was folded into the Console.* | One public surface to secure. Folding MCP in removes a container, the MCP-to-Console token type and a second public surface. Receivers verify, persist and acknowledge, and the real work runs asynchronously. | Webhooks straight to FastAPI, or a separate MCP container: each adds a public surface to harden |
+| D-02 | The Console is the only public application surface. It receives all webhooks and serves the MCP endpoint as a route. The Agent API is internal only. *Revised 2026-09-11 (F-02): the separate MCP server was folded into the Console.* *Revised 2026-09-13 (ADR-0038): the Console deployable, UI and versioned JSON API together, is the only public application surface.* | One public surface to secure. Folding MCP in removes a container, the MCP-to-Console token type and a second public surface. Receivers verify, persist and acknowledge, and the real work runs asynchronously. | Webhooks straight to FastAPI, or a separate MCP container: each adds a public surface to harden |
 | D-03 | Only the compute zone has internet egress, through a domain-allowlisted proxy. All external API calls happen in workers. In v1, Compose networks enforce this and CI tests it on every push (§10.1). | Makes "no send path" and "data leaves only by known routes" checkable at the network layer | An allowlist in application code only: one new import away from a new egress path |
 | D-04 | No raw document image goes to a hosted model in v1. OCR and extraction run locally. | An image cannot be pseudonymised the way text can (P9) | Hosted vision for better accuracy: sends raw personal data out |
 | D-05 | Every timer compares against Postgres `now()` | One clock, so host skew cannot fire a timer early or miss it | Host time in each worker |
@@ -656,3 +658,4 @@ flowchart LR
 | 2026-09-11 | **F-05:** SM renumbering checked across every document. No change was needed in `01`. | Owner's review |
 | 2026-09-11 | Status set to Frozen for step 2 review | Approved by the owner |
 | 2026-09-12 | **Step 4:** D-decisions promoted to ADR-0020 to 0023 (§15). Migrate job and database roles (§4, §7). Fail-closed redaction and pseudonymised traces (§5.4, §8). v1 hosted calls limited to drafting (§8). v1 authentication and audit (§9). Prometheus removed from the v1 stack (§10.1, §11). The tunnel made conditional on Razorpay (§10.1). Open questions closed or deferred (§16). A-Q8 closed (§2, §4). | ADR-0020 to ADR-0031 |
+| 2026-09-13 | The Console serves the JSON API and consumes it, and D-02 is reworded (§3, §4, §15). Two model modes and quota windows (§8). Loopback-only published port, with a fifth CI assertion (§10.1, DLT-01). MCP labelled as not in v1 (§2, §3, DLT-06). | ADR-0036, ADR-0038, delta 1 |

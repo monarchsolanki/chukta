@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Classifies every kind of data Chukta holds. Sets how each class is stored, accessed, sent to models, logged, kept and erased. Also sets the rules for synthetic data in v1, and the gate that must pass before any real data. |
 | **Intended reader** | The developer building v1, Hat A and Hat B, and whoever approves a pilot. |
-| **Status** | Frozen for step 3 review. Approved by the owner 2026-09-11. Later changes go through an ADR, except the §9 amendment the owner directed for the feasibility review. |
+| **Status** | Approved by the owner 2026-09-11. Revised 2026-09-13 for ADR-0036 and ADR-0037 (§7, and §9.1 condition 14). Later changes go through an ADR. |
 | **Author hat** | Hat C, Security and Compliance Engineer |
-| **Last updated** | 2026-09-11 |
+| **Last updated** | 2026-09-13 |
 | **Related** | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) for threats, controls and the VERIFY register from V25 onward. [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) §7 for where data lives. |
 
 ### Conventions
@@ -131,7 +131,7 @@ Uploads often carry far more personal data than a case needs (T-18). Minimise at
 |---|---|---|---|
 | The developer's machine (v1) | Everything, synthetic only | India | Full-disk encryption required |
 | AWS (production target only) | Everything, encrypted | ap-south-1, Mumbai | Not used in v1 |
-| Hosted frontier model provider | Pseudonymised prompts | Probably outside India | Cross-border transfer is allowed unless the destination is a restricted country [VERIFY V31: DPDP Act 2023 s.16]. Zero-retention terms are checked before a pilot. |
+| Hosted frontier model provider: the Gemini API free tier in v1 (ADR-0036) | Typed facts and templates only, with pseudonymised identifiers (ADR-0021, ADR-0037). The provider's current terms are confirmed under PROJECT_CONTEXT O-23. | Probably outside India | Cross-border transfer is allowed unless the destination is a restricted country [VERIFY V31: DPDP Act 2023 s.16]. Zero-retention terms are checked before a pilot. |
 | Langfuse Cloud | Pseudonymised traces | The region chosen at signup | ADR-0015. The real-data gate applies. |
 | Razorpay | The payment link's amount and description, and payment events | India | Test mode only in v1. No buyer contact fields are sent (`06` S-06). |
 | The user's MCP client and its model | Pseudonymised structured records (`06` S-01) | Unknown, chosen by the user | The least controlled route. It is disabled for real tenants until the pilot gate passes. |
@@ -174,6 +174,7 @@ No real tenant and no real personal data until every condition below is met and 
 | 11 | ADR-0015's replacement decided: Langfuse Cloud with masking and a processing agreement, or self-hosting | Traces carry data | Owner, Hat A |
 | 12 | An external penetration test of the deployed target | Nothing has attacked it yet | Owner |
 | 13 | The commencement status of the DPDP Act and Rules checked on the day [VERIFY V33] | Obligations are phasing in | Owner |
+| 14 | Every hosted model and tracing provider on a paid tier whose terms exclude training on submitted content, with minimal or zero retention. No free tier with real data. | ADR-0037: free-tier terms are acceptable only while data is synthetic and prompts carry typed facts and templates | Owner |
 
 ### 9.2 Deferred from v1
 
@@ -210,3 +211,4 @@ These rows were written by Hat B's feasibility review (`reviews/IMPL-FEASIBILITY
 | 2026-09-11 | First version | Hat C, step 2 |
 | 2026-09-11 | Approved by the owner, and frozen for step 3 review | Owner's review |
 | 2026-09-11 | §9 split into 9.1 (conditions) and 9.2 (items deferred from v1, DF-01 to DF-16) | The feasibility review, at the owner's direction: deferred items must go into the pilot gate, not be dropped |
+| 2026-09-13 | §7 names the v1 frontier provider and what it receives. §9.1 gains condition 14: a paid non-training tier before real data. | ADR-0036, ADR-0037 |

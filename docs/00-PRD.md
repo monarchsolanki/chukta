@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Defines what Chukta v1 does, who it is for, and how we will know it works. Every other design doc implements this one. |
 | **Intended reader** | The developer building v1, the Hat B and Hat C reviewers, and the owner who verifies statutory claims against primary sources. |
-| **Status** | Revised at step 4 (2026-09-12) through ADR-0020 to ADR-0035. The revision history is Appendix D. Frozen for the Hat C delta pass. Later changes go through an ADR. |
+| **Status** | Revised 2026-09-13 through ADR-0036 to ADR-0038 and the delta-1 decisions. The revision history is Appendix D. Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
-| **Last updated** | 2026-09-12 |
+| **Last updated** | 2026-09-13 |
 | **Source brief** | [`BRIEF.md`](BRIEF.md). Decisions that change the brief are in Appendix C. |
 
 ### Conventions used in this document
@@ -485,7 +485,7 @@ Model calls concentrate in three places: reading at ingestion, writing prose aro
 - For statutory figures: method parameters, the bank rate and its effective date, the day-count convention, and which B-1 rule applied.
 - For a BCS: the tie-out table.
 - For a dispute: the evidence spans behind each finding.
-- Which models produced which parts, with a trace link.
+- Which models produced which parts. A trace link is shown once tracing is built (build-if-time item 3, ADR-0030).
 
 ---
 
@@ -613,7 +613,8 @@ Low-confidence and high-impact model outputs wait here for a person. Much of the
 | NFR-11 | **Cost reporting.** Cost per case is reported with and without amortised local GPU time. | Eval run report | Both figures in every run (SM-22) |
 | NFR-12 | **Security baseline.** RBAC per §7.2, sessions, secrets, webhook verification, rate limits. | Defined in `06` | Set in `06` |
 | NFR-13 | **Latency.** Ledger upload to BCS draft. | Timed eval run on reference hardware, defined in `05` | SM-23 [System] |
-| NFR-14 | **Model-spend circuit breaker.** Each case has hard caps on model calls and tokens, per wake and over its lifetime, with a separate, lower cap on frontier-model tokens. Reaching any cap halts the case before the next model call, moves it to NeedsHuman with reason `SPEND_CAP`, and writes an audit event. Only the owner can raise the cap or resume the case. A per-tenant daily cap backs this up. Cap values are tenant configuration set in `03`. They are limits, not targets. NFR-12 rate limits do not cover model spend. | Runaway-loop suite: a node forced to loop on the frontier model, and on the SLM | SM-24 = 100% [System] |
+| NFR-14 | **Model-spend circuit breaker.** Each case has hard caps on model calls and tokens, per wake and over its lifetime, with a separate, lower cap on frontier-model tokens. Reaching any cap halts the case before the next model call, moves it to NeedsHuman with reason `SPEND_CAP`, and writes an audit event. Only the owner can raise the cap or resume the case. A per-tenant daily cap backs this up. Cap values are tenant configuration set in `03`. They are limits, not targets. NFR-12 rate limits do not cover model spend. **Quota units too** (ADR-0036): the breaker also enforces each provider's quota windows, meaning requests per minute and per day, and token windows where the provider defines them. An exhausted daily window moves the case to Waiting until the window resets, with an audit event. It never switches a run to local-only mode. | Runaway-loop suite: a node forced to loop on the frontier model, and on the SLM | SM-24 = 100% [System] |
+| NFR-15 | **API-first** (ADR-0038). Every Console capability is served by the versioned JSON API at `/api/v1`, and the Console consumes that API. A draft body is returned only by the approval-view endpoint, and share links only for approved artifacts, whatever the client. | Parity lint (no database access outside the API data layer), a contract test against `07`, and ST-06's API cases | Every Console data call hits a documented route [System] |
 
 ---
 
@@ -671,8 +672,8 @@ This is the most important section. It separates what we can measure now from wh
 
 | ID | Metric | Definition | Method | Sources | Target |
 |---|---|---|---|---|---|
-| SM-21 | Local SLM share | Local SLM calls divided by all model calls | The spend ledger over an eval run | All | ≥ 80% [System], from the brief. **In v1, a high share is partly a consequence of deferring the free-text hosted path (DF-14). It is not a routing optimisation. Every report states this next to the figure, with the task types that were eligible for hosted calls in that run (ADR-0034).** |
-| SM-22 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
+| SM-21 | Local SLM share | Local SLM calls divided by all model calls | The spend ledger over an eval run | All | ≥ 80% [System], from the brief. **In v1, a high share is partly a consequence of deferring the free-text hosted path (DF-14). It is not a routing optimisation. Every report states this next to the figure, with the task types that were eligible for hosted calls in that run (ADR-0034). It is reported separately for local-only and hosted mode (ADR-0036).** |
+| SM-22 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time. Every spend ledger row records the provider, tier and model that served the call, with quota units alongside rupees, and each figure states its mode, local-only or hosted (ADR-0036) | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
 | SM-23 | Ledger-to-BCS latency | p95 time from uploading a ledger of up to 500 rows to the BCS draft | Timed run on reference hardware | G | ≤ 3 minutes [System] |
 | SM-24 | Spend-cap enforcement | Seeded runaway cases in which no model call starts after a cap is reached and an audit event is written, divided by all seeded runaway cases | Runaway-loop suite: frontier and SLM loops, per-wake and lifetime caps | A | 100% [System] |
 
@@ -916,6 +917,9 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 0033 | Statute verification by build day 21 | Appendix A, Appendix B |
 | 0034 | SM-21 reported with its cause | SM-21 |
 | 0035 | The review sequence | Process only |
+| 0036 | Free tiers, local-only mode, quota units | NFR-14, SM-21, SM-22 |
+| 0037 | Free-tier model terms, and the paid-tier condition for real data | Pilot gate (`12` §9.1) |
+| 0038 | API-first | NFR-15, §7.3 |
 
 **Corrections to the brief applied in this document**
 
@@ -947,3 +951,4 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 2026-09-12 | Phase 2 for G5, FR-DSP-1 and SM-17 to SM-20 | ADR-0032 |
 | 2026-09-12 | VERIFY tags due by build day 21 | ADR-0033 |
 | 2026-09-12 | SM-21 reported with its cause | ADR-0034 |
+| 2026-09-13 | NFR-14 quota units, SM-21 and SM-22 per mode and provider tier, NFR-15 API-first, §7.3 trace link made conditional (DLT-06) | ADR-0036, ADR-0038, delta 1 |
