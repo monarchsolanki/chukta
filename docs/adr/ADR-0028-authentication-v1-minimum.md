@@ -5,7 +5,7 @@
 | **Purpose** | Records what authentication v1 builds, what waits for the pilot gate, and why. |
 | **Intended reader** | Anyone building sign-in, sessions, RBAC or ST-07. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by the owner's decision on DLT-01. |
 | **Resolves** | `06` S-02; SR-09; the feasibility review §4; DF-01 |
 | **Related** | PRD §7.2; `06` §3.5; `12` §9.1 condition 9; ADR-0030 |
 
@@ -26,6 +26,7 @@
 - **Built so the deferral is cheap to undo:** the user table has nullable TOTP fields from day one, and the step-up action list is a single enumeration in code.
 - **No no-op step-up check is built.** A check that always passes reads as protection when it is not.
 - If Auth.js's credentials provider requires JWT sessions (to be confirmed in `07`), v1 uses a small hand-written session module instead.
+- **Loopback only** (amended 2026-09-13, DLT-01): the v1 Compose file publishes the Console port on `127.0.0.1` only. Nothing in v1 needs remote access, so deferring MFA (DF-01) stops being an accepted residual in v1 and becomes a non-issue. The S-12 tunnel, if built, still routes only webhook paths, and it connects to loopback. The seeding CLI generates random passwords, shows them once and never writes them to the repo.
 
 ## Alternatives rejected
 

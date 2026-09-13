@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | Hat C's findings against Hat A's documents. Each finding has a severity, an attack or failure scenario, and a concrete mitigation. Hat A resolves them at step 4. |
 | **Intended reader** | Hat A for the step 4 revision, Hat B for feasibility and tests, and the owner |
-| **Status** | Approved by the owner 2026-09-11, with SR-01 to SR-04 confirmed genuine. Delta 1 run 2026-09-12 (below). |
+| **Status** | Approved by the owner 2026-09-11, with SR-01 to SR-04 confirmed genuine. Delta 1 run 2026-09-12. The owner decided all six delta-1 findings on 2026-09-13 (below). |
 | **Author hat** | Hat C, Security and Compliance Engineer |
-| **Last updated** | 2026-09-12 |
+| **Last updated** | 2026-09-13 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, and ADR-0001 to ADR-0019 at `75cc43c`. `02` to `05` are not written yet (PROJECT_CONTEXT O-11). |
 | **Method** | The threat model in [`06-SECURITY-THREAT-MODEL.md`](../06-SECURITY-THREAT-MODEL.md), using its severity scale. T-nn, S-nn and ST-nn IDs refer to `06`. DC-n classes refer to [`12-DATA-CLASSIFICATION.md`](../12-DATA-CLASSIFICATION.md). |
 
@@ -200,6 +200,19 @@
 | DLT-05 | Low | ADR-0029, generated files | Any CSV or XLSX Chukta generates from counterparty data can carry a narration that starts with `=`, `+`, `-` or `@`. When the owner opens the file, the spreadsheet runs it as a formula. | Escape such leading characters in every generated spreadsheet cell. Add a case to the ST-10 smoke test. | `07`, `11` |
 | DLT-06 | Low | `01` §3, PRD §7.3 | Stale v1 text. The `01` §3 diagram still draws MCP clients and an MCP endpoint, which are deferred (ADR-0026). PRD §7.3 promises the approver a trace link, but tracing is build-if-time (ADR-0030). A builder reading either would build the wrong thing. | Label MCP as not in v1 in the diagram. Change §7.3 to "a trace link, once tracing is built". | Next revision of `01` and the PRD |
 
-### Delta 2: `02` to `05` (ADR-0035)
+#### The owner's decisions on delta 1 (2026-09-13)
 
-*Not yet run.* It verifies SR-04, SR-06, SR-15 and SEC-01 in `02` to `04`, and DLT-02 and DLT-03 where they land.
+| Finding | Owner's decision | Recorded in | Status |
+|---|---|---|---|
+| DLT-01 | Publish the Console port on `127.0.0.1` only in the v1 Compose file. Nothing in v1 needs remote access, so deferring MFA becomes a non-issue in v1. The S-12 tunnel still routes webhook paths. | ADR-0028 amendment | Decided. Lands in `01` §10.1 and `10`. |
+| DLT-02 | Remove the input instead of filtering it. Approved seller free text leaves drafting prompts entirely, and is rendered into the artifact after generation as a slot sourced from its approved record. ADR-0021's invariant becomes absolute: only typed facts and templates reach a hosted model. No DF-14 work and no detector for this. | ADR-0029 and ADR-0021 amendments | Decided. **This also closes SR-05.** Verified in `03`'s node contracts (delta 2). |
+| DLT-03 | The checkpoint wrapper asserts the tenant is bound and raises before querying. A zero-row checkpoint for an existing case is an error, never a new thread. Both join ST-03. | ADR-0027 amendment | Decided. Lands in `02` and `03`. |
+| DLT-04 | Phase 2 keeps its 8-day hard stop and absorbs its suites, as extensions of ST-01 and ST-03 budgeted at 0.5 day. When Phase 2 runs short, features shrink, never suites. | ADR-0032 amendment | Decided |
+| DLT-05 | Prefix leading `=`, `+`, `-` and `@` in every exported cell. **Root cause, in the owner's framing:** S-08 banned formula evaluation on import, and nobody applied it on export. That is F-04's lesson repeating, which means the lesson is written down but is not yet a check. A doc-lint rule in `11` will make it one. | ADR-0029 amendment; `11` doc-lint rule (PROJECT_CONTEXT O-20) | Decided. The lint rule lands in `11`. |
+| DLT-06 | Fold into the next revision of `01` and the PRD | PROJECT_CONTEXT O-22 | Decided |
+
+**Updated tally for SR-05:** closed by DLT-02's resolution. That makes 8 closed, 4 closed for v1 with a scheduled residual, 1 accepted, 1 open pending a build-if-time item, and 5 to verify in documents not yet written.
+
+### Delta 2: `02`, `03` and `05` (ADR-0035)
+
+*Not yet run.* It verifies SR-04, SR-06, SR-15 and SEC-01 in `02` and `03`, and DLT-02 and DLT-03 where they land. `04` moved to Phase 2's first day, and gets its own review then.

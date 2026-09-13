@@ -5,8 +5,8 @@
 | **Purpose** | Records why RAG and the dispute agent are deferred from v1 but not dropped, and the hard bounds on when and how they return. |
 | **Intended reader** | The owner, Hat B (who writes the Phase 2 paragraph in `09`), and whoever designs `04` and `05`. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
-| **Resolves** | The owner's decision OD-1, as corrected on 2026-09-11. The scheduling of DF-09 and DF-11. SM-18's return for dispute findings, proposed at step 4 and pending the owner's confirmation (PROJECT_CONTEXT O-17). |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Metric set decided by the owner, DLT-04 and the `04` move amended, 2026-09-13. |
+| **Resolves** | The owner's decision OD-1, as corrected on 2026-09-11. The scheduling of DF-09 and DF-11. SM-18's return for dispute findings, decided by the owner on 2026-09-13 (O-17). DLT-04. The move of `04-RAG-DESIGN.md` to Phase 2. |
 | **Related** | `12` §9.2; ADR-0021, ADR-0024, ADR-0031; feasibility review §5.2 |
 
 ## Context
@@ -33,6 +33,10 @@ The feasibility review deferred the RAG layer, because once the dispute agent is
 - **Hard stop:** at day 8, whatever is unfinished goes back to `12` §9.2 as a decision for the pilot gate. Phase 2 does not extend.
 - **DF-09 and DF-11 stay in `12` §9.2 as they are.** Phase 2 is how they get resolved, not a change to the gate.
 - `09-BUILD-PLAN.md` gets one paragraph naming Phase 2, its 8 days and its hard stop (Hat B, step 5).
+- **The owner's decision on the metric set** (O-17, 2026-09-13), in the owner's words: "Phase 2 measures SM-17 (retrieval quality), SM-19 (dispute agreement) and SM-20 (dispute evidence recall), plus SM-18 (citation faithfulness) scoped to dispute findings only, not to statutory artifacts. My earlier 'SM-16, SM-17, SM-19' used pre-DOC-01 numbers. It was wrong and SM-16 stays out: document classification belongs to OCR, deferred as DF-06."
+- **Phase 2's security suites live inside the 8 days** (DLT-04, amended 2026-09-13). They are extensions of ST-01 (stored-injection cases against the dispute agent, on a real model) and ST-03 (the retrieval API), not new suites. Budget: 0.5 day.
+- **Phase 2's version of the day-12 rule:** when Phase 2 runs short, the dispute agent's features shrink, never its suites. With the 0.5 day of suites, the estimates above sum to 8.5 days, so Phase 2 starts half a day short and the rule applies from day one.
+- **`04-RAG-DESIGN.md` is written on Phase 2's first day,** inside the RAG estimate, not in step 5a (amended 2026-09-13). Retrieval is deferred from v1 entirely, and a design written now would be rewritten once the dispute agent's real needs appear (ADR-0035).
 
 ## Alternatives rejected
 

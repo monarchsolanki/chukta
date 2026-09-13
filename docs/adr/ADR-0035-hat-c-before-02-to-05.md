@@ -5,7 +5,7 @@
 | **Purpose** | Records the owner's change to the review sequence, which until now lived only in the master doc. |
 | **Intended reader** | Anyone running the remaining steps, and whoever reads SEC-REVIEW-ARCH later. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4). It records the owner's instruction of 2026-09-11. |
+| **Decision status** | Accepted, 2026-09-12 (step 4). It records the owner's instruction of 2026-09-11. Amended 2026-09-13: `04` moves to Phase 2 at the owner's request. |
 | **Resolves** | The owner's sequence change (PROJECT_CONTEXT O-11) |
 | **Amends** | ADR-0018 |
 | **Related** | BRIEF §3; `reviews/SEC-REVIEW-ARCH.md` |
@@ -22,11 +22,11 @@ ADR-0018 followed the brief: Hat A writes `00` to `05`, and then Hat C reviews t
   3. Hat B: the feasibility review
   4. Hat A: the step 4 revision
   5. Hat C: delta 1
-  6. Hat A: `02` to `05`
-  7. Hat C: delta 2, over `02` to `05`
+  6. Hat A: `02` and `03` (STOP), then `05`. `04` moves to Phase 2's first day (amended 2026-09-13, ADR-0032).
+  7. Hat C: delta 2, over `02`, `03` and `05`
   8. Hat B: `07` to `11`
   9. README and INDEX
-- **Delta 2 (O-11)** reviews `02` to `05` once they are written, and is appended to SEC-REVIEW-ARCH. The owner decides whether it gets its own STOP.
+- **Delta 2 (O-11)** reviews `02`, `03` and `05` once they are written, and is appended to SEC-REVIEW-ARCH. The owner decides whether it gets its own STOP. `04` gets its own security review on Phase 2's first day.
 
 ## Alternatives rejected
 

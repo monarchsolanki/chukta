@@ -5,7 +5,7 @@
 | **Purpose** | Closes the two gaps in tenant isolation: checkpoints outside RLS, and a single connection that would need both schema ownership and RLS. |
 | **Intended reader** | Anyone writing migrations, the data-access layer, the checkpointer setup or ST-03. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by the owner's decision on DLT-03. |
 | **Resolves** | `06` S-07; SR-04; the owner's finding SEC-01 |
 | **Amends** | ADR-0012, ADR-0014 |
 | **Related** | `01` §4, §7; `06` §3.2; ADR-0023; PROJECT_CONTEXT O-14 |
@@ -35,6 +35,10 @@ ADR-0012 enforced RLS on the `app` schema. ADR-0014 put LangGraph's checkpoints 
   - RLS policies on the `agent_runtime` tables key on the prefix (S-07).
   - If RLS on LangGraph's own tables fights the library, the prefix wrapper stays, and the RLS part is logged as a finding (feasibility review §9).
 - **`02-DATA-MODEL.md` specifies the grants table by table** (O-14).
+- **Checkpoint reads fail loudly, never empty** (amended 2026-09-13, DLT-03):
+  - The checkpoint wrapper asserts that the tenant is bound, and raises **before** querying, not after.
+  - A zero-row checkpoint result is cross-checked against the case row in the `app` schema. If the case exists and its checkpoint is empty, that is an error that moves the case to NeedsHuman. It is never a new thread.
+  - Both checks join ST-03.
 
 ## Alternatives rejected
 

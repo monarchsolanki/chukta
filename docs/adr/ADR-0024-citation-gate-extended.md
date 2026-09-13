@@ -5,7 +5,7 @@
 | **Purpose** | Records the extension of the gate after Hat C's one Critical finding, and the decision that statutory artifacts carry no model-written prose. |
 | **Intended reader** | Anyone working on the renderer, templates, the gate or ST-04. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). The SM-18 scope was decided by the owner on 2026-09-13 (O-17). |
 | **Resolves** | `06` S-04, SR-01 (Critical), SK-01, SK-02, the model part of PRD FR-STA-5, and SM-18 |
 | **Amends** | ADR-0010 |
 | **Related** | PRD §7.1 (A2); `06` §3.3; ADR-0005 |
@@ -21,7 +21,7 @@ ADR-0010's regulated tokens covered amounts, dates, day counts, percentages, doc
 - **An echo check** blocks any outbound draft that reproduces a span of untrusted content longer than a configured length.
 - **The approval screen** shows payment details as a separate, highlighted block.
 - **Statutory artifacts are template-only,** with no model-written prose (SK-02). So G6, the entailment check on statutory prose, is skipped (SK-01). It comes back only through an ADR that allows model prose in statutory artifacts.
-- **SM-18 no longer applies to statutory artifacts.** It returns in Phase 2, scoped to dispute findings, because their cited spans are chosen by a model (ADR-0032, proposed at step 4 and pending the owner's confirmation under PROJECT_CONTEXT O-17). SK-01's reasoning, that there is no model prose to check, holds for templates but not for dispute findings.
+- **SM-18 no longer applies to statutory artifacts.** It returns in Phase 2, scoped to dispute findings, because their cited spans are chosen by a model (ADR-0032, decided by the owner on 2026-09-13 under O-17). SK-01's reasoning, that there is no model prose to check, holds for templates but not for dispute findings.
 
 ## Alternatives rejected
 
