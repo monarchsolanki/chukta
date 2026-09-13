@@ -7,7 +7,7 @@
 | **Doc status** | In Review |
 | **Decision status** | Accepted, 2026-09-13. Records the owner's constraint C-2. |
 | **Resolves** | Constraint C-2 (2026-09-13) |
-| **Amends** | ADR-0020 (D-02's wording), ADR-0028 (the token model), ADR-0025 and ADR-0026 (the draft rule applied to every client); `06` §3.8 P-9 and §6 |
+| **Amends** | ADR-0020 (D-02's wording), ADR-0028 (the token model), ADR-0025 and ADR-0026 (the draft rule applied to every client); `06` §6 and §3.8 (P-9) |
 | **Related** | `01` §3, §4; `07`; `11`; feasibility review §11 |
 
 ## Context

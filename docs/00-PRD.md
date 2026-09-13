@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Defines what Chukta v1 does, who it is for, and how we will know it works. Every other design doc implements this one. |
 | **Intended reader** | The developer building v1, the Hat B and Hat C reviewers, and the owner who verifies statutory claims against primary sources. |
-| **Status** | Revised 2026-09-13 through ADR-0036 to ADR-0038 and the delta-1 decisions. The revision history is Appendix D. Frozen for delta 2. Later changes go through an ADR. |
+| **Status** | Revised 2026-09-13 through ADR-0036 to ADR-0040 and the delta-1 decisions. The revision history is Appendix D. Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
 | **Last updated** | 2026-09-13 |
 | **Source brief** | [`BRIEF.md`](BRIEF.md). Decisions that change the brief are in Appendix C. |
@@ -424,6 +424,8 @@ flowchart LR
 | Dispute investigation | Complaint thread, challan, GRN, POD, prior credit notes | Multi-hop reasoning to assess each claim, with cited spans | Needs reading across several unstructured sources | LLM + code | Frontier |
 | Draft prose (all artifacts) | Typed facts and a template | Writes the connecting prose in the thread's language and register | Template-only prose cannot follow the thread's language. Facts stay in slots. | LLM for prose only | Frontier; SLM for short messages |
 
+**Draft prose is the one row above whose claim is not yet measured** (FB-03, ADR-0040). It is also the only hosted path in v1. SM-25 measures how often drafting falls back to the template, and a blind comparison in the eval phase tests whether readers prefer the model's prose at all. If they do not, v1 runs in local-only mode, and the hosted path stays specified but unused.
+
 ### 6.3 Where AI was removed
 
 | Brief's component | What the brief implied | What we do instead | Why nothing is lost | ADR |
@@ -676,6 +678,7 @@ This is the most important section. It separates what we can measure now from wh
 | SM-22 | Cost per case | Model spend per account case, reported two ways: hosted API cost only, and hosted plus amortised local GPU time. Every spend ledger row records the provider, tier and model that served the call, with quota units alongside rupees, and each figure states its mode, local-only or hosted (ADR-0036) | Traces plus infra cost for the run | All | No target yet. A rupee target before the first run would be invented. It will be set by ADR after the first baseline. |
 | SM-23 | Ledger-to-BCS latency | p95 time from uploading a ledger of up to 500 rows to the BCS draft | Timed run on reference hardware | G | ≤ 3 minutes [System] |
 | SM-24 | Spend-cap enforcement | Seeded runaway cases in which no model call starts after a cap is reached and an audit event is written, divided by all seeded runaway cases | Runaway-loop suite: frontier and SLM loops, per-wake and lifetime caps | A | 100% [System] |
+| SM-25 | Drafting fallback rate | Finalised non-statutory artifacts that shipped with the template's fixed prose instead of model prose, divided by all finalised non-statutory artifacts. Statutory artifacts skip drafting by design, so they are excluded. | `artifact_version.prose_source` over an eval run, with `spend_ledger.outcome` for the cause | G, H | No target. Reported per mode, local-only and hosted, never blended. Read together with the blind drafting comparison, which decides whether the hosted path earns its place (ADR-0040). |
 
 **v1 status (ADR-0031, ADR-0032):** SM-15 is measured only if evidence packets are built. SM-16 waits for DF-06. SM-17 to SM-20 are measured in Phase 2, and SM-18 for dispute findings only. Every other system metric is measured in v1.
 
@@ -920,6 +923,8 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 0036 | Free tiers, local-only mode, quota units | NFR-14, SM-21, SM-22 |
 | 0037 | Free-tier model terms, and the paid-tier condition for real data | Pilot gate (`12` §9.1) |
 | 0038 | API-first | NFR-15, §7.3 |
+| 0039 | A demo driver replaces the upload pages | Process only (the demo) |
+| 0040 | The drafting node must earn its hosted path | §6.2, SM-25 |
 
 **Corrections to the brief applied in this document**
 
@@ -952,3 +957,4 @@ All 19 were accepted at checkpoint 1 on 2026-09-11. The ADR files follow in Hat 
 | 2026-09-12 | VERIFY tags due by build day 21 | ADR-0033 |
 | 2026-09-12 | SM-21 reported with its cause | ADR-0034 |
 | 2026-09-13 | NFR-14 quota units, SM-21 and SM-22 per mode and provider tier, NFR-15 API-first, §7.3 trace link made conditional (DLT-06) | ADR-0036, ADR-0038, delta 1 |
+| 2026-09-13 | SM-25 added. §6.2 names draft prose as the one unmeasured AI claim. | ADR-0040 (FB-03) |

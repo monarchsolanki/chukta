@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | Defines every table Chukta v1 stores, who may read and write each one, and which invariants the database itself enforces. Specifies the two database roles and their grants (SEC-01), tenant isolation down to the checkpoint tables, and the reference data the statutory engine reads. |
 | **Intended reader** | The developer writing migrations, the data-access layer and the engines. Hat C, for delta 2. Hat B, for `07` and `11`. |
-| **Status** | In Review |
+| **Status** | Approved by the owner 2026-09-13. Revised the same day by ADR-0040 (§6.8, §6.9). Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
 | **Last updated** | 2026-09-13 |
 | **Depends on** | [`00-PRD.md`](00-PRD.md), [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) §7, [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md), and ADR-0009, ADR-0012, ADR-0013, ADR-0014, ADR-0021, ADR-0023, ADR-0027, ADR-0030, ADR-0036, ADR-0038 |
@@ -271,7 +271,7 @@ Each table lists its key columns and the constraints that matter. Every tenant-s
 | Table | Key columns | Constraints and notes |
 |---|---|---|
 | `artifact` | `id`, `case_id`, `kind`, `status`, `current_version int` | `kind` is message, bcs, l4_notice, or evidence_packet (build-if-time). `status` is drafting, gate_blocked, pending_approval, approved, rejected, finalised or sent. |
-| `artifact_version` | `artifact_id`, `version`, `rendered_text`, `render_map jsonb`, `content_sha256`, `gate_result jsonb`, `template_id`, `template_version` | Primary key `(artifact_id, version)`. Unique `(artifact_id, version, content_sha256)`. Insert-only: any edit writes a new version (PRD §7.1, A3). `render_map` maps every regulated-token span to its slot and source record (ADR-0010, ADR-0024). |
+| `artifact_version` | `artifact_id`, `version`, `rendered_text`, `render_map jsonb`, `content_sha256`, `gate_result jsonb`, `template_id`, `template_version`, `prose_source` | Primary key `(artifact_id, version)`. Unique `(artifact_id, version, content_sha256)`. Insert-only: any edit writes a new version (PRD §7.1, A3). `render_map` maps every regulated-token span to its slot and source record (ADR-0010, ADR-0024). `prose_source` is model_hosted, model_local, template_fallback or template_only, and SM-25 is computed from it (ADR-0040). |
 | `seller_text` | `id`, `body`, `approved_artifact_id`, `approved_version`, `trust` | Insert-only, with `trust = 'system'`. **Approved seller free text is stored as a record and rendered into later artifacts as a slot, after generation. It is never a prompt input** (DLT-02, ADR-0029). |
 | `approval` | `id`, `artifact_id`, `version`, `content_sha256`, `decision`, `ca_waived boolean`, `decided_by`, `decided_at`, `reason null` | Insert-only. **The foreign key `(artifact_id, version, content_sha256)` references `artifact_version`,** so an approval is bound to exact bytes (A3, bypass path P-6). A CA waiver requires `ca_waived` plus an audit event. |
 | `ca_attestation` | `id`, `artifact_id`, `version`, `attested_by`, `note`, `attested_at` | Insert-only. Required before an L4 approval, unless the approval records a waiver. |
@@ -287,7 +287,7 @@ Each table lists its key columns and the constraints that matter. Every tenant-s
 | `outbox` | `id`, `topic`, `payload jsonb`, `dedupe_key`, `published_at null` | Unique `dedupe_key`. `payload` holds IDs and codes only. Written in the same transaction as the fact that caused it (ADR-0013). Claimed through `claim_outbox_batch` (§4.4). |
 | `processed_task` | `dedupe_key` (primary key), `task`, `processed_at` | Checked in the same transaction as the task's effect (SM-06) |
 | `dead_letter` | `id`, `task`, `dedupe_key`, `error_code`, `attempts`, `failed_at`, `review_item_id` | No payload text. Every dead letter raises a review item. |
-| `spend_ledger` | `id`, `case_id null`, `task`, `mode`, `provider`, `tier`, `model`, `requests int`, `input_tokens`, `output_tokens`, `cost_paise`, `quota_window_hit null` | Insert-only. The source of truth for cost (ADR-0030). `mode` is local_only or hosted, and `tier` is free or paid (ADR-0036). Per-case caps are summed from it (NFR-14). |
+| `spend_ledger` | `id`, `case_id null`, `task`, `mode`, `provider`, `tier`, `model`, `requests int`, `input_tokens`, `output_tokens`, `cost_paise`, `quota_window_hit null`, `outcome` | Insert-only. The source of truth for cost (ADR-0030). `mode` is local_only or hosted, and `tier` is free or paid (ADR-0036). Per-case caps are summed from it (NFR-14). `outcome` is ok, schema_failed or quota_deferred (ADR-0040). |
 | `quota_usage` | `provider`, `tier`, `window`, `window_start`, `requests`, `tokens` | Primary key `(provider, tier, window, window_start)`. `window` is rpm, rpd, tpm or tpd. **Deployment-wide and not tenant-scoped,** because a free-tier quota belongs to the API key, not to a tenant (D2-05). It holds no tenant data. |
 | `pseudonym_map` | `case_id`, `token`, `value_enc` | Primary key `(case_id, token)`. DC-5. The value is encrypted in the application (D2-Q3). Only the gateway module reads it, which ST-05 checks. Deleted with the case's inbound messages (`12` §3). |
 | `audit_event` | `id bigint identity`, `tenant_id null`, `actor_type`, `actor_id`, `action`, `subject_type`, `subject_id`, `before jsonb null`, `after jsonb null`, `at`, `prev_hash null`, `hash null` | Insert-only. `tenant_id` is null only for sign-in events, which RLS shows only to the same `app.user_id`. `before` and `after` hold IDs and codes, never free text. `prev_hash` and `hash` are filled once build-if-time item 4 is built (ADR-0023). |
@@ -405,3 +405,4 @@ These are promoted to ADRs at the next Hat A revision. Until then, this table is
 | Date | Change | Why |
 |---|---|---|
 | 2026-09-13 | First version | Hat A, step 5a |
+| 2026-09-13 | `spend_ledger.outcome` and `artifact_version.prose_source`, for SM-25 | ADR-0040 (FB-03) |

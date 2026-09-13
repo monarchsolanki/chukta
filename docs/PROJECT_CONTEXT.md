@@ -21,17 +21,17 @@
 ## START HERE (one screen, verified 2026-09-13)
 
 - **Phase:** design documentation only. No application code until the doc set is complete ([BRIEF](BRIEF.md), "Your task in this session").
-- **Current step:** step 4 and Hat C's delta 1 are done and reviewed. On 2026-09-13 the owner decided O-17 (Phase 2's metric set) and all six delta-1 findings (O-19), recorded as ADR amendments, and added two constraints: C-1 (free tiers only in v1, with an upgrade path) and C-2 (API-first, so a mobile client can come later). **C-1 and C-2 are now recorded (ADR-0036 to ADR-0038) and costed by Hat B at 1.5 days, all after day 12 (feasibility review §11). The PRD, `01`, `06` and `12` are revised to match, and `02` and `03` are written.**
+- **Current step:** `02` and `03` are approved (2026-09-13). The owner accepted OD-4 as a demo driver (ADR-0039), raised FB-03, the drafting node's load-bearing test (ADR-0040, SM-25), and moved O-06 ahead of `05`. **`05` is blocked until the owner answers O-06.**
 - **v1 in one line:** the four claims (tenant isolation, citation gate, no send path, spend cap) tested by build day 12, the statutory engine as the gate's carrier, and two AI slices, Reconciliation and Conversation, in 24 working days (ADR-0031). **Phase 2** follows: 8 days with a hard stop, the dispute agent with its RAG layer (ADR-0032).
-- **🛑 STOP.** Waiting for the owner's review of `02` and `03`. Next: `05`, Hat C's delta 2 over `02`, `03` and `05`, and Hat B's `07` to `11`. `04` moved to Phase 2's first day (ADR-0035).
-- **Needs the owner:** a review of `02` and `03`, and OD-4 (O-24), which is optional and due before build day 12.
+- **🛑 STOP.** Waiting for the owner's answer to O-06, the local model, with measured facts in its row. Then `05`, Hat C's delta 2 over `02`, `03` and `05`, and Hat B's `07` to `11`.
+- **Needs the owner:** O-06.
 
 | | Verified 2026-09-13 |
 |---|---|
 | Repo | `~/chukta`, a sibling of `~/N073` and **not inside it**. Branch `main`, pushed to **public** GitHub repo <https://github.com/monarchsolanki/chukta> (made public 2026-09-13 at the owner's request). Commits use the owner's GitHub noreply address, set repo-locally, and never credit Claude. |
-| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · `7a60972` delta 1 · `cef46cc` repo made public · `76d0eb7` O-17 and O-19 decisions · `ef1fc8a` C-1 and C-2 ADRs · `bb02208` C-1 and C-2 revisions · `b7d5dbb` `02` · then `03` |
-| Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md`, `06-SECURITY-THREAT-MODEL.md` and `12-DATA-CLASSIFICATION.md` (revised 2026-09-13, frozen for delta 2). ADR-0001 to 0038 (In Review, all Accepted). `02-DATA-MODEL.md` and `03-AGENT-DESIGN.md` (In Review). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
-| Pending | The owner's review of 02 and 03. Then Hat A's 05, Hat C's delta 2, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18). Then README and INDEX. `04` waits for Phase 2. |
+| Commits | `947cc5a` brief · `e50d320` PRD · `75cc43c` ADR-0001 to 0019 · `078b7d4` PRD fixes · `a9d8893` this file · `e212bdd` `01` · `762d8b7` F-01 to F-05 · `ac21264` `06` · `6a7fd5d` `12` · `7c66d16` SEC-REVIEW-ARCH · `1dad35d` SEC-01 · `2366294` feasibility review · `a213c8b` ADR-0020 to 0035 · `f9ca1c2` step-4 revisions · `7a60972` delta 1 · `cef46cc` repo made public · `76d0eb7` O-17 and O-19 decisions · `ef1fc8a` C-1 and C-2 ADRs · `bb02208` C-1 and C-2 revisions · `b7d5dbb` `02` · `3746042` `03` · then OD-4, FB-03 and DOC-04 |
+| Written | `BRIEF.md` (Frozen). This file. `00-PRD.md`, `01-ARCHITECTURE.md`, `06-SECURITY-THREAT-MODEL.md` and `12-DATA-CLASSIFICATION.md` (revised 2026-09-13, frozen for delta 2). ADR-0001 to 0040 (In Review, all Accepted). `02-DATA-MODEL.md` and `03-AGENT-DESIGN.md` (approved 2026-09-13, revised by ADR-0040, frozen for delta 2). `reviews/SEC-REVIEW-ARCH.md` and `reviews/IMPL-FEASIBILITY-REVIEW.md` (approved). |
+| Pending | O-06 (the owner). Then Hat A's 05, Hat C's delta 2 over 02, 03 and 05, and Hat B's 07 to 11, including Phase 2's paragraph in 09 (O-18) and the demo driver in 09 and 10 (O-26). Then README and INDEX. `04` waits for Phase 2. |
 | Statutory corpus | Empty by design. The owner loads verified text by build day 21 (ADR-0033, PRD Appendix B). |
 | Running system | None. v1 is not built. |
 
@@ -45,29 +45,29 @@
 | 3 | B | IMPL-FEASIBILITY-REVIEW | ✅ Approved 2026-09-11, with OD-1 to OD-3 decided |
 | 4 | A | Revision: ADR-0020 to 0035 and document revisions | ✅ Done 2026-09-12 |
 | 4b | C | Delta 1 over the step-4 revision | ✅ Done 2026-09-12. 6 new findings (DLT-01 to DLT-06), one High. Awaiting the owner's review. |
-| 5a | A | 02 and 03 (STOP), then 05. `04` moved to Phase 2's first day. | ✅ `02` and `03` written 2026-09-13. Awaiting the owner's review. `05` next. |
+| 5a | A | 02 and 03, then 05. `04` moved to Phase 2's first day. | ✅ `02` and `03` approved 2026-09-13. `05` is blocked on O-06. |
 | 5b | C | Delta 2 over 02, 03 and 05 | Not started |
 | 5c | B | 07 to 11 | Not started |
 | 6 | Final | README, INDEX | Not started |
 
 ## What is actually open (verified 2026-09-13)
 
-Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status table), O-10 (FR-APR-3), O-13 (ADR-0020 to 0030), O-15 (the owner's decisions) and O-16 (the step-4 revisions). O-01 and O-02 closed on 2026-09-11. O-17 and O-19 closed on 2026-09-13 by the owner's decisions. O-21 closed on 2026-09-13 by ADR-0036 to ADR-0038 and the feasibility review §11. O-22 closed on 2026-09-13 by the revision of `01`, the PRD, `06` and `12`. O-14 closed on 2026-09-13 by `02` §3.
+Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status table), O-10 (FR-APR-3), O-13 (ADR-0020 to 0030), O-15 (the owner's decisions) and O-16 (the step-4 revisions). O-01 and O-02 closed on 2026-09-11. O-17 and O-19 closed on 2026-09-13 by the owner's decisions. O-21 closed on 2026-09-13 by ADR-0036 to ADR-0038 and the feasibility review §11. O-22 closed on 2026-09-13 by the revision of `01`, the PRD, `06` and `12`. O-14 closed on 2026-09-13 by `02` §3. O-24 closed on 2026-09-13 by ADR-0039.
 
 | ID | Item | Owner | Due or blocks |
 |---|---|---|---|
 | O-03 | Verify V01 to V24 (PRD Appendix A) by elapsed build day 21, alongside O-04 (ADR-0033). Verify V25 to V43 (`06` Appendix A) before the pilot gate. | Monarch | Build day 21, and the pilot gate |
 | O-04 | Load verified statute text per PRD Appendix B | Monarch | Build day 21 |
 | O-05 | Hand-write 80 Hinglish messages, with 2 or 3 other contributors | Monarch | Build day 18 |
-| O-06 | Confirm the `qwen3.6:27b` Ollama tag exists and fits the developer's machine (v1 has no GPU host). If it does not fit, pick a smaller local model. The default frontier model is named in ADR-0036: the Gemini API free tier. | Monarch, then ADR-0016 | Build day 4 |
+| O-06 | **Blocks `05`** (the owner's sequencing, 2026-09-13). Choose the local model. **Measured on the developer's machine, 2026-09-13, with nothing downloaded:** MacBook Pro with an Apple M5 Pro, 25.8 GB unified memory (sold as 24 GB), a Metal GPU budget (`recommendedMaxWorkingSetSize`) of 19.07 GB, Ollama 0.30.8 installed. `qwen3.6:27b` exists on the Ollama registry: Q4_K_M, 27.3B parameters, 16.8 GB of weights. That leaves about 2.3 GB of the GPU budget for context and compute buffers, and about 9 GB of total memory for everything else, including macOS, Docker and the v1 stack. Other sizes measured: `qwen3:14b` (Q4_K_M, 14.8B, 9.3 GB), `qwen3:8b` (5.2 GB), `qwen3:30b` (MoE, 18.6 GB, which leaves almost no GPU budget for context). The only other `qwen3.6` size found is 35b, which is larger. | Monarch | `05` |
 | O-07 | Default CA-review policy for formal notices. Proposed: required by default, and the owner can waive it with an audit event. | Monarch | PRD §7.2 |
 | O-11 | Hat C's delta 2 over `02`, `03` and `05` (ADR-0035) | Hat C | After `05` |
 | O-12 | Delta 1 verified every resolution. Five are decided in ADRs but not yet visible in a document: SR-04, SR-06, SR-15, SR-18 and SEC-01. They are checked in `02` to `04` (delta 2) and `10`. SR-10 stays open until build-if-time item 4, or DF-20 at the pilot gate. | Hat C | Delta 2 |
 | O-18 | Phase 2's paragraph in `09-BUILD-PLAN.md`: a named follow-on of 8 days with a hard stop, not an open backlog (ADR-0032) | Hat B | Step 5c |
-| O-20 | DLT-05's root cause as a check: a doc-lint rule in `11`. When a control is decided for one direction or one instance of a pattern, every other instance must be named as covered or explicitly excepted. | Hat B | `11` |
+| O-20 | Doc-lint rules in `11`. **Control symmetry (DLT-05):** when a control is decided for one direction or one instance of a pattern, every other instance must be named as covered or explicitly excepted. **Section references (DOC-04):** every reference matches an exact heading, including list continuations, and pointers to "decisions" or "open questions" land on headings with those titles. | Hat B | `11` |
 | O-23 | Confirm the Gemini API's current free-tier limits and data terms, and the paid tier's non-training terms, before any figure or claim about them appears in a document. Limits live in configuration (ADR-0036, ADR-0037). | Monarch | Build day 4, with O-06 |
-| O-24 | OD-4: replace B13's upload pages with a command-line client of `/api/v1`, winning back 0.5 day of contingency (feasibility review §11.3). Hat B recommends it. | Monarch | Before build day 12 |
-| O-25 | Promote `02`'s D2-01 to D2-07 and `03`'s D3-01 to D3-07 to ADRs at the next Hat A revision, and answer the open questions: D2-Q1 (LangGraph tables, Hat B in `10`), D2-Q2 and D3-Q2 (checkpointer and interrupts inside the wrapper's transaction, the build-day-9 spike), D2-Q3 (column encryption, Hat C in delta 2), D3-Q1 and D3-Q3 (confidence thresholds and language detection, Hat A in `05`) | Hat A, Hat B, Hat C | Next Hat A revision |
+| O-25 | Promote `02`'s D2-01 to D2-07 and `03`'s D3-01 to D3-07 to ADRs at the next Hat A revision, and answer the open questions: D2-Q1 (LangGraph tables, Hat B in `10`), D2-Q2 and D3-Q2 (checkpointer and interrupts inside the wrapper's transaction, the build-day-9 spike), D2-Q3 (column encryption, Hat C in delta 2), D3-Q1, D3-Q3 and D3-Q4 (confidence thresholds, language detection, and a local-prose arm in the blind drafting comparison, Hat A in `05`) | Hat A, Hat B, Hat C | Next Hat A revision |
+| O-26 | Record the demo driver (ADR-0039) in `09` (its place in the build, replacing B13's upload pages) and `10` (its location in the repository, and the README's two-command demo) | Hat B | `09`, `10` |
 
 ## Traps: easy to get wrong
 
@@ -90,6 +90,7 @@ Closed at step 4 on 2026-09-12: O-08 (ADR-0020 to 0023), O-09 (`01` §16 status 
 - **Payment details are regulated tokens** (SR-01, ADR-0024). An account number, UPI ID, IFSC code, URL, email or phone in outbound prose must come from a slot, never from model text.
 - **In v1, hosted model calls are drafting prompts only** (ADR-0021). A free-text hosted call waits for DF-14's full pseudonymisation pipeline.
 - **Phase 2 is 8 days with a hard stop, not a backlog** (ADR-0032). Unfinished work goes back to `12` §9.2.
+- **`05` waits for O-06.** Three of the four model nodes run only on the local SLM (`03` §7), so the model choice moves the targets `05` sets.
 - **Never record a decision as the owner's without the owner's words in the record** (O-17).
 
 ## Keeping this current is part of the job
@@ -119,19 +120,19 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 |---|---|---|
 | The original requirements | [`BRIEF.md`](BRIEF.md) | Frozen |
 | What we build, for whom, and how we measure it | [`00-PRD.md`](00-PRD.md) | Revised 2026-09-13. Frozen for delta 2. |
-| Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0038, summarised in the decision register below | Written, In Review, all Accepted |
+| Why a decision was made | [`adr/`](adr/): ADR-0001 to ADR-0040, summarised in the decision register below | Written, In Review, all Accepted |
 | System architecture: components, trust zones, flows, durable execution, model gateway, deployment | [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) | Revised 2026-09-13. Frozen for delta 2. |
-| Data model: tables, the two database roles and their grants, tenant isolation down to checkpoints, database-enforced invariants | [`02-DATA-MODEL.md`](02-DATA-MODEL.md) | In Review |
-| Agent and engine design: the case graph, router, nodes, input contracts, engines, durable execution | [`03-AGENT-DESIGN.md`](03-AGENT-DESIGN.md) | In Review |
+| Data model: tables, the two database roles and their grants, tenant isolation down to checkpoints, database-enforced invariants | [`02-DATA-MODEL.md`](02-DATA-MODEL.md) | Approved 2026-09-13. Revised by ADR-0040. Frozen for delta 2. |
+| Agent and engine design: the case graph, router, nodes, input contracts, engines, durable execution | [`03-AGENT-DESIGN.md`](03-AGENT-DESIGN.md) | Approved 2026-09-13. Revised by ADR-0040 and DOC-04. Frozen for delta 2. |
 | Retrieval design | `04-RAG-DESIGN.md` | Written on Phase 2's first day (ADR-0032, ADR-0035) |
-| Evaluation plan | `05-EVAL-PLAN.md` | Pending (Hat A, step 5a) |
+| Evaluation plan, including SM-25's blind drafting comparison (ADR-0040) | `05-EVAL-PLAN.md` | Blocked on O-06 (Hat A, step 5a) |
 | Threat model: threats, deep dives, security decisions and their v1 status, test suites, VERIFY register V25 onward | [`06-SECURITY-THREAT-MODEL.md`](06-SECURITY-THREAT-MODEL.md) | Revised 2026-09-13. Frozen for delta 2. |
 | API contracts: the public JSON API and token model (ADR-0038), plus the send adapter and Tally adapter interfaces | `07-API-CONTRACTS.md` | Pending (Hat B) |
 | Synthetic data | `08-SYNTHETIC-DATA-SPEC.md` | Pending (Hat B) |
-| The build plan: v1 in 24 days, then Phase 2 | `09-BUILD-PLAN.md` | Pending (Hat B) |
+| The build plan: v1 in 24 days with the demo driver (ADR-0039), then Phase 2 | `09-BUILD-PLAN.md` | Pending (Hat B) |
 | Repo layout for the build | `10-REPO-STRUCTURE.md` | Pending (Hat B) |
 | Test strategy, including the doc lint that DOC-01 to DOC-03 call for | `11-TEST-STRATEGY.md` | Pending (Hat B) |
-| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Revised 2026-09-13. §9.1 has 14 conditions. §9.2 lists DF-01 to DF-16. |
+| Data classification: classes, inventory, handling, minimisation, retention, residency, synthetic-data rules, pilot gate | [`12-DATA-CLASSIFICATION.md`](12-DATA-CLASSIFICATION.md) | Revised 2026-09-13. `12` §9.1 has 14 conditions, and `12` §9.2 lists DF-01 to DF-16. |
 | Reviews between hats | [`reviews/SEC-REVIEW-ARCH.md`](reviews/SEC-REVIEW-ARCH.md): 18 findings plus SEC-01, and the delta passes. [`reviews/IMPL-FEASIBILITY-REVIEW.md`](reviews/IMPL-FEASIBILITY-REVIEW.md): what fits in 28 days, the cuts, the build order. | Both approved. Delta 1 done 2026-09-12. |
 | Full index | `INDEX.md` | Final step |
 
@@ -140,6 +141,13 @@ A wrong line here is worse than a missing one. It reads as authoritative and nob
 # Part 2: Record
 
 ## Dated log (newest first)
+
+### 2026-09-13 · `02` and `03` approved; OD-4, FB-03, O-06 moved ahead of `05`; DOC-04
+- **The owner approved `02` and `03`,** confirming DLT-02, DLT-03 and SEC-01 as correctly resolved, and named `02` §7 and §4.4 as the strongest work in the set.
+- **OD-4, accepted with a change of shape (ADR-0039):** not an upload command, but a demo driver that seeds, ingests a ledger, runs a case to a draft, shows it and approves it, all through `/api/v1`. Contingency returns to 1.0 day. `09` and `10` record it (O-26).
+- **FB-03, the owner's finding (ADR-0040):** N-11 is the only hosted path, falls back silently, and nothing measured it. That fails the load-bearing-AI test the project applied to every other component. New SM-25 (drafting fallback rate, per mode), and a blind drafting comparison in `05` with its decision rule written before it runs. If readers prefer nothing, v1 runs local-only. PRD, `02` and `03` revised.
+- **O-06 moved ahead of `05`,** because three of the four model nodes run only on the local SLM, and a smaller model moves SM-09, SM-11, SM-13 and SM-14. Facts were measured on the developer's machine, with nothing downloaded (O-06 row).
+- **DOC-04:** `03`'s conventions pointed at wrong but existing sections. The lint had accepted any reference whose major section existed. Fixed, and a strict scan run across every document.
 
 ### 2026-09-13 · 03-AGENT-DESIGN written (Hat A). STOP.
 - **The case graph:** a deterministic router (N-02) that clears incoming information before planning outbound work, 18 v1 nodes, and a typed case state that no model sees.
@@ -366,13 +374,15 @@ One row per ADR. The ADR file holds the full reasoning, and this row holds the o
 | [0034](adr/ADR-0034-sm21-reported-with-its-cause.md) | SM-21 is always reported with its cause | FB-02: a side effect of scope must not read as optimisation | Amends 0016 and 0017 |
 | [0035](adr/ADR-0035-hat-c-before-02-to-05.md) | Hat C ran before Hat A's 02 to 05, with a second delta pass | Records the owner's sequence change, which until now lived only in this file | Amends 0018 |
 
-**Owner constraints (2026-09-13)**
+**Owner constraints and decisions (2026-09-13)**
 
 | ADR | Decision | Why, in one line | Resolves or amends |
 |---|---|---|---|
 | [0036](adr/ADR-0036-free-tiers-local-only-mode-quota-units.md) | Free tiers in v1 with upgrade paths, a zero-cost local-only mode, and quota units | C-1: v1 must cost nothing, and anyone cloning the repo must be able to run it | Amends 0016, 0030 |
 | [0037](adr/ADR-0037-free-tier-model-terms-and-privacy.md) | Free-tier model terms are acceptable only while prompts carry typed facts and templates on synthetic data | C-1: the privacy trade-off must be explicit, with an end condition | Adds `12` §9.1 condition 14 |
 | [0038](adr/ADR-0038-api-first.md) | API-first: one deployable serves the UI and `/api/v1`, the token model is specified, and the draft rule applies to every client | C-2: a mobile client later without a backend rewrite | Amends 0020 (D-02), 0025, 0026, 0028 |
+| [0039](adr/ADR-0039-demo-driver.md) | A demo driver runs the v1 story through `/api/v1`, replacing the upload pages | OD-4: a one-command demo is worth more than an upload page, and it proves C-2 | Amends the feasibility review's B13 |
+| [0040](adr/ADR-0040-drafting-must-earn-its-hosted-path.md) | SM-25 and a blind drafting comparison decide whether N-11's hosted path earns its place | FB-03: the last hosted AI component had never faced the load-bearing test | Amends PRD §6.2 and §10.2, `02`, `03` |
 
 ## Bug register
 
@@ -390,6 +400,7 @@ A wrong fact or a missing requirement in a doc is a defect. IDs use `DOC-` for d
 | F-03 | 2026-09-11, owner review of `01` | High | §10 assumed a funded AWS deployment with a GPU host, and A-Q5 treated the GPU host as a scheduling question when it is not affordable at all | Cost was never checked against the project's budget before the topology was drawn | v1 is `docker compose up` on a developer machine, and AWS is a specified-but-not-built target. D-03 shown to hold under Compose networks and tested in CI. A-Q5 reframed. D-06 revised. | CI egress and network tests (`01` §10.1) | Fixed |
 | F-04 | 2026-09-11, owner review of `01` | Low | §11 alerted on review-queue age but not on approval-queue age, so a draft nobody approves would stall its case unnoticed | Ageing was specified for the review queue (FR-HQ-5) and not generalised to every queue | Approval-queue signal and alert in `01` §11. The PRD requirement is O-10. | Alert test in `11` | Fixed in `01`. PRD requirement open (O-10). |
 | SEC-01 | 2026-09-11, owner review of Hat C | Medium | `06` §3.2 requires a runtime database role that owns nothing and has no `BYPASSRLS`, while `01` §4 has the Console run Prisma migrations, which need DDL rights. One connection string cannot do both. | Two documents written from different angles both implied the role split, and neither stated it. Hat C checked controls against threats, not against the configuration `01` gives the same component. | To be specified in `02-DATA-MODEL.md`: a migration role run as a separate job, and a runtime role under RLS, with each component's role stated (O-14) | The `06` §3.2 startup check, plus a test that the runtime role cannot run DDL | Open until `02` |
+| DOC-04 | 2026-09-13, Hat A while applying ADR-0040 | Low | `03`'s conventions sent readers to §4.3, §12 and §13 for nodes outside v1, decisions and open questions. They are §4.2, §11 and §12. | Sections were renumbered while `03` was written. The lint accepted a reference whenever its major section existed, so a reference to a wrong but existing section passed, and `03` was approved with the defect. | The three references corrected, and a strict scan run across every document (exact headings, list continuations inherited, and decision and open-question pointers checked against heading titles) | The section-reference rule in `11` (O-20) | Fixed |
 
 Symptom and root cause are separate columns on purpose. In one LMS batch, every root cause turned out to differ from the reported symptom.
 
@@ -403,7 +414,7 @@ Symptom and root cause are separate columns on purpose. In one LMS batch, every 
 
 **Documentation phase (now):** the checkpoint tracker in Part 1. After Hat C's delta 1: Hat A's 02 to 05, Hat C's delta 2 (ADR-0035), Hat B's 07 to 11, then README and INDEX.
 
-**Build phase:** 28 days and one developer, which is 24 working days: 20 planned and 4 of contingency. The feasibility review §6 sets the order. All four claim suites pass by elapsed day 12, and the statute text is loaded in Phase 4 (days 21 to 24). `09-BUILD-PLAN.md` formalises this. C-1 and C-2 add 1.5 days, all after day 12, which leaves 0.5 day of contingency. No build-if-time item is expected unless OD-4 is taken (feasibility review §11).
+**Build phase:** 28 days and one developer, which is 24 working days: 20 planned and 4 of contingency. The feasibility review §6 sets the order. All four claim suites pass by elapsed day 12, and the statute text is loaded in Phase 4 (days 21 to 24). `09-BUILD-PLAN.md` formalises this. C-1 and C-2 add 1.5 days, all after day 12. OD-4, taken as a demo driver (ADR-0039), wins back 0.5 day, so contingency is 1.0 day: enough for build-if-time item 1 and nothing more (feasibility review §11).
 
 **Phase 2 (ADR-0032):** a named follow-on of 8 working days after v1 closes, with a hard stop. Its only feature is the dispute agent (DF-09) with the RAG layer that serves it (DF-11), and its trajectory suite lands with the feature. `04-RAG-DESIGN.md` is written on its first day. Its security suites, extensions of ST-01 and ST-03, sit inside the 8 days. When it runs short, features shrink, never suites. Whatever is unfinished at day 8 goes back to `12` §9.2 as a pilot-gate decision.
 
@@ -457,3 +468,5 @@ The reasons are in the feasibility review §5.4.
 - **A control that fails closed is only safe if the layer above treats the closed result as a failure.** RLS returning zero rows would have looked like a brand-new case to LangGraph (DLT-03, the owner's lesson).
 - **A lesson written down is not yet a check.** F-04 taught "apply a control to every instance of its pattern", and DLT-05 repeated the mistake anyway: formula evaluation was banned on import, and nobody applied it on export. The fix is a doc-lint rule (O-20).
 - **Remove an input rather than filter it, when the input needs no model.** Approved seller text needed no rewriting, so taking it out of drafting prompts made ADR-0021's invariant absolute, with no detector to maintain (DLT-02).
+- **Apply the load-bearing test to every AI component, including the last one.** The project cut AI from three components and never asked whether its only hosted node earned its place (FB-03, the owner's finding).
+- **A lint that falls back to a coarser match finds missing references, never wrong ones.** `03` pointed at existing but wrong sections, and passed (DOC-04).

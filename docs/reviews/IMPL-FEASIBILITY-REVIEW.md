@@ -4,7 +4,7 @@
 |---|---|
 | **Purpose** | A blunt review of what the doc set asks for, measured against 28 days and one developer. It names every feature that does not fit and labels what happens to it, ranks the security test suites, costs authentication, and sequences the build so the project's claims are tested early. |
 | **Intended reader** | The owner, who decides the cuts. Hat A, who turns them into ADRs at step 4. Hat C, whose controls this review shrinks. |
-| **Status** | Approved by the owner 2026-09-11, including the §3 disagreement. The owner's decisions and fixes FB-01 and FB-02 were applied at step 4 (§10). §11 costs constraints C-1 and C-2 (2026-09-13), and is In Review. |
+| **Status** | Approved by the owner 2026-09-11, including the §3 disagreement. The owner's decisions and fixes FB-01 and FB-02 were applied at step 4 (§10). §11 costs C-1 and C-2. OD-4 was decided on 2026-09-13 (ADR-0039). |
 | **Author hat** | Hat B, Implementation Lead |
 | **Last updated** | 2026-09-13 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, ADR-0001 to 0019, `06`, `12` and `SEC-REVIEW-ARCH.md` at `7c66d16`, and the owner's SEC-01. `02` to `05` do not exist yet. |
@@ -114,7 +114,7 @@ This table lists every build item the documents ask for. For each it gives an es
 
 The owner ranks four suites as non-negotiable, because they verify the four claims the project makes: tenant isolation, the citation gate, no send path, and the spend cap. **Hat B agrees on all four.**
 
-But the PRD makes more than four claims. §10.2 states **seven** safety invariants as [System] targets of zero or 100%: SM-01 to SM-06 and SM-24. A suite that is not built leaves one of those numbers untested. The extra suites below are cheap, because the cuts in §2 shrink what they have to cover.
+But the PRD makes more than four claims. PRD §10.2 states **seven** safety invariants as [System] targets of zero or 100%: SM-01 to SM-06 and SM-24. A suite that is not built leaves one of those numbers untested. The extra suites below are cheap, because the cuts in §2 shrink what they have to cover.
 
 | Suite | What it proves | Owner | Hat B | Extra cost in v1 | Reason |
 |---|---|---|---|---|---|
@@ -180,7 +180,7 @@ DF-01 to DF-16 are written into `12` §9.2, each marked Required before the pilo
 |---|---|---|---|
 | OD-1 | Defer the RAG layer (DF-11) | **Defer.** Once the dispute agent is deferred, nothing in v1 retrieves from a corpus. Conversation classifies one message at a time. Reconciliation reads the file in front of it. Drafting sees only typed facts (SR-06). Evidence uses the entity graph, which stays. Building hybrid retrieval now would mean building it only to feed its own metric. If the owner wants retrieval shown in v1, the cheapest real consumer is "find the message where this buyer promised to pay", at about 2 days from contingency. | The brief's §2 specifies the RAG layer, and rule 9 says no requirement is cut silently |
 | OD-2 | Move the Razorpay loop to build-if-time | **Build-if-time, second in line.** It proves none of the four claims, and it adds a send path that SR-02 had to close. Counting S-06, S-12 and ST-08, it costs 1 day, not the half day estimated at checkpoint 1. | The owner added it at checkpoint 1 (ADR-0011) |
-| OD-3 | Move evidence packets to build-if-time | **Build-if-time, first in line.** For a proof, Reconciliation is the richer half of the primary product: AI layout reading, a deterministic matcher, and an artifact that passes through the gate. Without OCR (DF-06), an evidence packet is mostly file bundling. | The PRD names Evidence and Reconciliation as the primary product (§1.3) |
+| OD-3 | Move evidence packets to build-if-time | **Build-if-time, first in line.** For a proof, Reconciliation is the richer half of the primary product: AI layout reading, a deterministic matcher, and an artifact that passes through the gate. Without OCR (DF-06), an evidence packet is mostly file bundling. | The PRD names Evidence and Reconciliation as the primary product (PRD §1.3) |
 
 **Owner decisions (2026-09-11):** OD-2 and OD-3 agreed. OD-1 agreed for v1, with a correction to the plan's shape: the RAG layer returns together with the dispute agent in a bounded 8-day Phase 2 after v1 (ADR-0032). They are the two components that demonstrate retrieval engineering, so deferring them is right for v1 and wrong permanently. Phase 2 restores RAG with its consumer, which answers this review's objection instead of overriding it.
 
@@ -344,6 +344,7 @@ These cuts touch frozen documents. Each needs an ADR at step 4, not a quiet edit
 | 2026-09-11 | Approved by the owner, including the §3 disagreement | Owner's review |
 | 2026-09-12 | Owner decisions recorded under §5.2. §7's O-03 row pinned to build day 21. §8's SM-21 note given its cause. | OD-1 to OD-3, FB-01 (ADR-0033), FB-02 (ADR-0034) |
 | 2026-09-13 | §11 added: constraints C-1 and C-2 costed against the committed 22 days | ADR-0036 to ADR-0038 |
+| 2026-09-13 | The owner's decision on OD-4 recorded under §11.3 | ADR-0039 |
 
 ---
 
@@ -379,4 +380,6 @@ These cuts touch frozen documents. Each needs an ADR at step 4, not a quiet edit
 - **Costs:** uploads in v1 run from a terminal instead of a browser. That is acceptable on synthetic data with three demo users.
 
 **Hat B recommends taking OD-4.** If the owner declines, the plan above stands at 0.5 day of contingency.
+
+**Owner decision (2026-09-13): accepted, with a change of shape** (ADR-0039). Not an upload command, but a demo driver: one command seeds a tenant, ingests a ledger, runs a case to a draft, shows the artifact and approves it, all through `/api/v1`. Uploads are one subcommand. It still wins back the 0.5 day and still proves C-2 with a second non-browser client, and it gives the README a two-command demo. **Contingency returns to 1.0 day, which is exactly build-if-time item 1.** `09` and `10` record the driver.
 

@@ -11,7 +11,7 @@
 
 ## Context
 
-`01` made these decisions in §15, and revised them after the owner's findings F-02 and F-03. `06` answered A-Q3 and A-Q7, and the feasibility review confirmed the Compose runtime (A-Q2). Until now they have lived only in tables inside documents, so this ADR records them durably.
+These decisions were first made in `01` §15, and revised after the owner's findings F-02 and F-03. `06` answered A-Q3 and A-Q7, and the feasibility review confirmed the Compose runtime (A-Q2). Until now they have lived only in tables inside documents, so this ADR records them durably.
 
 ## Decision
 

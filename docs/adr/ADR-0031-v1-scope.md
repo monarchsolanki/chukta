@@ -6,7 +6,7 @@
 | **Intended reader** | Everyone. This is the scope of record for v1. |
 | **Doc status** | In Review |
 | **Decision status** | Accepted, 2026-09-12 (step 4) |
-| **Resolves** | The feasibility review's verdict and its §8 list. The owner's decisions OD-1 (v1 part) and OD-3 (2026-09-11). The disposition of `01` A-Q1, A-Q5 and A-Q6. PROJECT_CONTEXT O-10. |
+| **Resolves** | The feasibility review's verdict and its change list (feasibility review §8). The owner's decisions OD-1 (v1 part) and OD-3 (2026-09-11). The disposition of `01` A-Q1, A-Q5 and A-Q6. PROJECT_CONTEXT O-10. |
 | **Related** | `reviews/IMPL-FEASIBILITY-REVIEW.md`; `12` §9.2; ADR-0023 to ADR-0030, ADR-0032 |
 
 ## Context

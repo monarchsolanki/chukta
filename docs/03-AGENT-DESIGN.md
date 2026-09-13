@@ -4,15 +4,15 @@
 |---|---|
 | **Purpose** | Defines the case graph, the deterministic router, every node, and exactly what each node may read and write. It is the node input contract that SR-06, SR-15 and DLT-02 required: which content can reach which prompt. It also covers the deterministic engines, durable execution inside the graph, and how model calls are budgeted. |
 | **Intended reader** | The developer building the case engine, the nodes and the prompt builder. Hat C, for delta 2. Hat B, for `05`, `07` and `11`. |
-| **Status** | In Review |
+| **Status** | Approved by the owner 2026-09-13. Revised the same day by ADR-0040 (§4.1, §6, §12). Frozen for delta 2. Later changes go through an ADR. |
 | **Author hat** | Hat A, Systems Architect |
 | **Last updated** | 2026-09-13 |
 | **Depends on** | [`00-PRD.md`](00-PRD.md) §5, §6; [`01-ARCHITECTURE.md`](01-ARCHITECTURE.md) §5, §6, §8; [`02-DATA-MODEL.md`](02-DATA-MODEL.md); ADR-0007, ADR-0009, ADR-0010, ADR-0021, ADR-0024, ADR-0027, ADR-0029, ADR-0031, ADR-0032, ADR-0036 |
 
 ### Conventions
 
-- **Scope:** v1 nodes in full. Nodes for build-if-time items, deferred items and Phase 2 are listed in §4.3, with only their contract.
-- **IDs used here:** nodes are N-01 onward. Decisions made first here are D3-01 onward (§12). Open questions are D3-Q1 onward (§13).
+- **Scope:** v1 nodes in full. Nodes for build-if-time items, deferred items and Phase 2 are listed in §4.2, with only their contract.
+- **IDs used here:** nodes are N-01 onward. Decisions made first here are D3-01 onward (§11). Open questions are D3-Q1 onward (§12).
 - **Every number here is a configuration default,** not a target. Targets live in PRD §10.
 - **"Agent"** means a model-driven node (ADR-0007). The orchestrator and the engines are plain code.
 
@@ -120,7 +120,7 @@ A pure function of case state. It checks the rows below in order and takes the f
 | N-08 | `build_bcs` | code | None | `reconciliation_item` | The reconciliation's BCS data and status | A failed tie-out keeps it open, and the gate blocks any BCS artifact (SM-11) |
 | N-09 | `statutory_engine` | code (§8) | None | Confirmed `invoice_acceptance`, confirmed terms, confirmed `udyam_classification`, `customer.buyer_type`, `payment_allocation`, verified `provision`, `bank_rate`, `method_profile` | `statutory_computation` and its join tables | An undetermined result raises a review item naming the missing input (PRD §3.2) |
 | N-10 | `plan_step` | code | None | `invoice_state`, the latest `statutory_computation`, the B-1 rules (PRD §5.8), open review items, the tenant's ladder settings | `planned_step`: artifact kind, invoices, ladder step, template | If nothing is eligible, go to N-17 |
-| N-11 | `draft_prose` | LLM | Local in local-only mode, hosted in hosted mode | **Typed facts only** (§5.1, §5.3) | Prose blocks that contain slot placeholders | Schema failure falls back to the template's fixed prose. **Statutory artifacts (L3, L4) skip this node entirely** (ADR-0024). |
+| N-11 | `draft_prose` | LLM | Local in local-only mode, hosted in hosted mode | **Typed facts only** (§5.1, §5.3) | Prose blocks that contain slot placeholders | Schema failure falls back to the template's fixed prose. **Statutory artifacts (L3, L4) skip this node entirely** (ADR-0024). Every run records `prose_source` and the ledger `outcome`, which SM-25 measures (ADR-0040). |
 | N-12 | `render` | code | None | The template, the prose blocks, slot sources, and `seller_text` as a slot | `artifact_version` with `rendered_text`, `render_map` and `content_sha256` | A slot with no source record blocks at the gate |
 | N-13 | `gate` | code | None | `artifact_version` and every source record in its `render_map` | `gate_result`, artifact status | A block returns to the router with the reason. The same block three times raises a review item (D3-03). |
 | N-14 | `await_approval` | code (LangGraph `interrupt()`) | None | Not applicable | Artifact status `pending_approval` | The run ends and resumes on the approval decision |
@@ -129,7 +129,7 @@ A pure function of case state. It checks the rows below in order and takes the f
 | N-17 | `schedule_wake` | code | None | Promises, ladder intervals, review items' `due_at` | `collection_case.wake_at`, state `waiting` | Not applicable |
 | N-18 | `halt` | code | None | The halt reason | `collection_case` state `needs_human` (spend cap, missing checkpoint) or `waiting` (quota window), plus `audit_event` | Not applicable |
 
-**v1 has four model nodes (N-03, N-05, N-07, N-11) and fourteen code nodes.** Only N-11 can ever reach a hosted model, and only in hosted mode.
+**v1 has four model nodes (N-03, N-05, N-07, N-11) and fourteen code nodes.** Only N-11 can ever reach a hosted model, and only in hosted mode. **It is the last component the load-bearing test applies to:** SM-25 and a blind drafting comparison decide whether its hosted path earns its place, and if it does not, v1 runs local-only (ADR-0040).
 
 ### 4.2 Nodes outside v1 (contract only)
 
@@ -195,7 +195,7 @@ A model's JSON is a proposal. Code checks every value against our own records be
 | N-03 | `labels` from the six-label enum. `entities`: UTRs, amounts, date phrases, invoice references. `language`. `confidence`. | Labels are in the enum. A UTR matches a bank-reference pattern and is looked up in `bank_credit_line`. Amounts parse to paise and do not exceed the open balance. **Date phrases like "month-end tak" are resolved to dates by code, in IST, never by the model** (D3-04). Invoice references exist for this customer. | Below the per-label threshold, or any check fails: a review item (FR-CNV-3) |
 | N-05 | The header row index, a column mapping (date, narration, reference, debit, credit, balance) and the sign convention | The mapped columns exist. Every row parses. Opening plus debits minus credits equals closing, exactly. | Tie-out fails: a review item (FR-ING-2) |
 | N-07 | For each residual row: a cause from the enum, and an internal reference where one applies | The row belongs to this reconciliation. The proposed cause reconciles to the rupee. A deduction is derived from the arithmetic, never from a hard-coded rate. Any internal reference exists. | Any check fails: the cause is "unexplained" (FR-REC-2) |
-| N-11 | Prose blocks, each keyed by the template's block ID | The block IDs match the template. Length limits hold. The language matches the thread's. **The authoritative check for regulated tokens is the gate's scanner at N-13** (ADR-0024), which runs on the rendered result. | Schema failure: the template's fixed prose (D-09) |
+| N-11 | Prose blocks, each keyed by the template's block ID | The block IDs match the template. Length limits hold. The language matches the thread's. **The authoritative check for regulated tokens is the gate's scanner at N-13** (ADR-0024), which runs on the rendered result. | Schema failure: the template's fixed prose (D-09), recorded as `template_fallback` so SM-25 counts it (ADR-0040) |
 
 **Thresholds are configuration.** They are calibrated on the development split of the H set, and never tuned on its test split (ADR-0017). `05` sets the procedure.
 
@@ -305,6 +305,7 @@ These are promoted to ADRs at the next Hat A revision. Until then, this table is
 | D3-Q1 | How per-label confidence thresholds are calibrated on the H development split, and how often | Hat A | `05` |
 | D3-Q2 | Do LangGraph's interrupt and resume work when every checkpoint statement runs inside the wrapper's transaction? This is tied to D2-Q2. | The build-day-9 spike | An ADR if the fallback is needed |
 | D3-Q3 | Detecting an unsupported language: a small local library, or the SLM's `language` field | Hat A, through evals | `05` |
+| D3-Q4 | Should the blind drafting comparison add local SLM prose as a third arm, so it also tests whether N-11 earns its place in local-only mode? | Hat A, with the owner | `05` |
 
 ---
 
@@ -313,3 +314,5 @@ These are promoted to ADRs at the next Hat A revision. Until then, this table is
 | Date | Change | Why |
 |---|---|---|
 | 2026-09-13 | First version | Hat A, step 5a |
+| 2026-09-13 | N-11 records `prose_source` and the ledger `outcome`, and is named as the last component under the load-bearing test | ADR-0040 (FB-03) |
+| 2026-09-13 | Conventions: section references corrected to §4.2, §11 and §12 | DOC-04 |

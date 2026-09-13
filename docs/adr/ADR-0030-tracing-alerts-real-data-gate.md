@@ -21,7 +21,7 @@ ADR-0015 chose Langfuse Cloud with masking, and a real-data gate held by a flag.
 - **Prometheus metrics and alerts,** including the queue-ageing alerts, are DF-05, Required before the pilot. In v1, queue ages appear as flags in the Console (FR-APR-3 and FR-HQ-5, ADR-0031).
 - **The real-data gate is enforced by the data model, not by memory.** Every tenant row carries `synthetic = true`, and a check constraint rejects any other value while this ADR is in force (B2).
 - **Detection of real-looking identifiers at ingestion,** with ST-14, is build-if-time item 5. If it is not built, it becomes SK-06, because it is moot once the pilot gate lifts.
-- **Lifting the gate** needs every condition in `12` §9.1, every Required row in §9.2, and a new ADR.
+- **Lifting the gate** needs every condition in `12` §9.1, every Required row in `12` §9.2, and a new ADR.
 
 ## Alternatives rejected
 

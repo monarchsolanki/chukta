@@ -30,4 +30,4 @@ The brief rules out autonomous sending and requires human approval of every outb
 
 - SM-03 can be checked statically. The codebase has no messaging client, and an egress allowlist permits only model providers, the Razorpay test API and tracing.
 - "Sent" is a human assertion, so BO-08 depends on people marking artifacts sent.
-- Payment links follow the order in §7.1 A6: approve, create the link, render the final artifact.
+- Payment links follow the order in PRD §7.1 A6: approve, create the link, render the final artifact.
