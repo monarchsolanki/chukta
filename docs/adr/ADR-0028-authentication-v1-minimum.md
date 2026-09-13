@@ -5,7 +5,7 @@
 | **Purpose** | Records what authentication v1 builds, what waits for the pilot gate, and why. |
 | **Intended reader** | Anyone building sign-in, sessions, RBAC or ST-07. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by the owner's decision on DLT-01. |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by the owner's decision on DLT-01. Amended 2026-09-13 by ADR-0038, which specifies the token model. |
 | **Resolves** | `06` S-02; SR-09; the feasibility review §4; DF-01 |
 | **Related** | PRD §7.2; `06` §3.5; `12` §9.1 condition 9; ADR-0030 |
 

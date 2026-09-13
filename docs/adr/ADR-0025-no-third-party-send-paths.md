@@ -5,7 +5,7 @@
 | **Purpose** | Extends ADR-0011's no-send guarantee to third parties, hardens the Razorpay loop, and records where it sits in v1. |
 | **Intended reader** | Anyone working on payments, webhooks, the approval screen or ST-06 and ST-08. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by ADR-0038, which applies the draft rule to every client. |
 | **Resolves** | `06` S-06 and S-13; SR-02, SR-08 and SR-12; the owner's decision OD-2 (2026-09-11); the v1 status of PRD FR-PAY-1 and FR-PAY-2 |
 | **Amends** | ADR-0011 |
 | **Related** | `06` §3.6, §3.8; `reviews/IMPL-FEASIBILITY-REVIEW.md` §5.3; ADR-0020 |

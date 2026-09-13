@@ -5,7 +5,7 @@
 | **Purpose** | Records what v1 uses for cost and observability, and how the synthetic-only rule is enforced rather than remembered. |
 | **Intended reader** | Anyone working on the spend ledger, tracing, alerts, tenant creation or ST-14. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by ADR-0036, which adds quota fields to the spend ledger. |
 | **Resolves** | `06` S-11; SR-14; the feasibility review §8 changes to ADR-0015, `01` §11 and NFR-10; build-if-time items 3 (fallback DF-19) and 5 (fallback SK-06); DF-05 |
 | **Amends** | ADR-0015 |
 | **Related** | `12` §8, §9; ADR-0021, ADR-0031 |

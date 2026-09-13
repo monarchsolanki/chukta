@@ -4,9 +4,9 @@
 |---|---|
 | **Purpose** | A blunt review of what the doc set asks for, measured against 28 days and one developer. It names every feature that does not fit and labels what happens to it, ranks the security test suites, costs authentication, and sequences the build so the project's claims are tested early. |
 | **Intended reader** | The owner, who decides the cuts. Hat A, who turns them into ADRs at step 4. Hat C, whose controls this review shrinks. |
-| **Status** | Approved by the owner 2026-09-11, including the §3 disagreement. The owner's decisions and fixes FB-01 and FB-02 were applied at step 4 (§10). |
+| **Status** | Approved by the owner 2026-09-11, including the §3 disagreement. The owner's decisions and fixes FB-01 and FB-02 were applied at step 4 (§10). §11 costs constraints C-1 and C-2 (2026-09-13), and is In Review. |
 | **Author hat** | Hat B, Implementation Lead |
-| **Last updated** | 2026-09-12 |
+| **Last updated** | 2026-09-13 |
 | **Reviewed** | `00-PRD.md` at `078b7d4`, `01-ARCHITECTURE.md` at `762d8b7`, ADR-0001 to 0019, `06`, `12` and `SEC-REVIEW-ARCH.md` at `7c66d16`, and the owner's SEC-01. `02` to `05` do not exist yet. |
 
 ### Conventions
@@ -343,3 +343,40 @@ These cuts touch frozen documents. Each needs an ADR at step 4, not a quiet edit
 | 2026-09-11 | First version | Hat B, step 3 |
 | 2026-09-11 | Approved by the owner, including the §3 disagreement | Owner's review |
 | 2026-09-12 | Owner decisions recorded under §5.2. §7's O-03 row pinned to build day 21. §8's SM-21 note given its cause. | OD-1 to OD-3, FB-01 (ADR-0033), FB-02 (ADR-0034) |
+| 2026-09-13 | §11 added: constraints C-1 and C-2 costed against the committed 22 days | ADR-0036 to ADR-0038 |
+
+---
+
+## 11. Addendum: constraints C-1 and C-2, costed (2026-09-13)
+
+**Hat B, Implementation Lead.** The owner estimated about 1.25 days for both constraints, which would leave 0.75 day of contingency and push out build-if-time items 1 and 2. Hat B's estimate is **1.5 days**. The outcome for build-if-time is the same, but the contingency left is thinner than the owner expects.
+
+### 11.1 The cost
+
+| Constraint | Work | Days (range) | Lands | Why this much |
+|---|---|---|---|---|
+| C-1 | Local-only mode: route drafting to the local SLM when no hosted key is set, and record the mode in the eval report | 0.25 (0.25 to 0.5) | With the first drafting node, after day 12 | Mostly routing configuration. The report field is trivial. |
+| C-1 | Quota units: provider, tier, model and request counts in the spend ledger, quota-window checks in the breaker, 429 and retry-after handling, and daily exhaustion moving the case to Waiting | 0.5 (0.5 to 0.75) | With the first hosted drafting call, after day 12. ST-11's per-case caps still land before day 12. | **This is where the owner's estimate is light.** On a free tier, rate limiting is the normal case, not an edge case, so window tracking and deferral must actually work and be tested. |
+| C-1 | ADR-0037's `tier: free` start-up guard | 0 | Inside the gateway config loader | A single startup check |
+| C-2 | Route conventions (`/api/v1`, one error shape, cursor pagination) and the principal interface with the cookie strategy | 0 extra | B3 and B7, before day 12 | The plan already builds these routes and the session module. C-2 only fixes their shape, so the work is the same. |
+| C-2 | A typed API client for Console pages, the parity lint (no Prisma outside the API data layer), OpenAPI generated from route schemas, and a contract test against `07` | 0.5 (0.5 to 0.75) | With B13, after day 12 | Without the lint and the contract test, "the Console consumes its own API" is an unenforced claim, which is DLT-05's lesson |
+| C-2 | ST-06's API cases: draft bodies only from the approval-view endpoint, share links refused before approval | 0.25 | After day 12. ST-06's web cases still prove claim 3 by day 12. | New assertions on existing endpoints |
+| C-2 | The bearer-token strategy | 0 in v1 | Specified in `07` only | Nothing in v1 uses it |
+| | **Total** | **1.5 (1.25 to 2.0)** | **Nothing extra before day 12** | |
+
+### 11.2 What it does to the plan
+
+- **The day-12 checkpoint does not move.** Every extra hour lands after day 12, and the four claim suites are untouched. This is the owner's non-negotiable, and it holds.
+- **The committed scope becomes 23.5 of 24 working days,** leaving **0.5 day of contingency**. The owner's estimate would have left 0.75.
+- **No build-if-time item fits.** Item 1 alone needs 1.0 day. At the end of v1, all seven take their declared fallbacks (§5.3): DF-17 to DF-22, and SK-06.
+- **The day-12 rule is now the only real buffer.** If the build is up to a day behind at day 12, Conversation (B10) drops to build-if-time as before, but there is no contingency behind that rule any more.
+
+### 11.3 A way to win back half a day (OD-4, the owner decides)
+
+**Replace B13's upload pages with a small command-line client that calls `/api/v1`.** The approval screen, the case view and the review queue stay as pages.
+- **Saves:** about 0.5 day. That puts contingency back at 1.0 day, which is exactly build-if-time item 1 (evidence packets).
+- **Also demonstrates C-2 better than any lint:** a second, non-browser client uses the API from the first week, which is what a mobile client will do later.
+- **Costs:** uploads in v1 run from a terminal instead of a browser. That is acceptable on synthetic data with three demo users.
+
+**Hat B recommends taking OD-4.** If the owner declines, the plan above stands at 0.5 day of contingency.
+

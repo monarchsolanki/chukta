@@ -5,7 +5,7 @@
 | **Purpose** | Records where v1 runs, how its network boundary is enforced, and the region of the production target. |
 | **Intended reader** | Anyone building the Compose stack, CI or the production target. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by ADR-0038, which rewords D-02. |
 | **Resolves** | `01` D-02, D-03, D-06. `06` S-03, S-12, S-14. SR-13, SR-17, SR-18. `01` A-Q2, A-Q3, A-Q7. |
 | **Related** | `01` §3, §10; `06` §4; `reviews/IMPL-FEASIBILITY-REVIEW.md` B1; ADR-0025 |
 

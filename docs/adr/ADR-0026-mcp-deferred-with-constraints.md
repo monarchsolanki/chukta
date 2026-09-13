@@ -5,7 +5,7 @@
 | **Purpose** | Closes the MCP versus P9 question and records the conditions under which MCP may be built. |
 | **Intended reader** | Anyone who later builds the MCP endpoint or its tool contract. |
 | **Doc status** | In Review |
-| **Decision status** | Accepted, 2026-09-12 (step 4) |
+| **Decision status** | Accepted, 2026-09-12 (step 4). Amended 2026-09-13 by ADR-0038, which applies the draft rule to every client. |
 | **Resolves** | `06` S-01; SR-03; `01` A-Q8; the owner's finding F-01; DF-12; the v1 status of PRD FR-INT-3 |
 | **Related** | `01` §2; `06` §3.8 (P-3); ADR-0020 |
 
